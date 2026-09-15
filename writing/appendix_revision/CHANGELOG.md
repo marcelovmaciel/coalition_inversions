@@ -1,18 +1,14 @@
-# Compact appendix follow-up
+# Compact appendix verification
 
-Base: `239d66b3630babc70ea2de10aaf070f45180f069`.
+The compact appendix presents supporting coalition data and ideological-domain
+robustness in four tables and one figure. The generator reads existing
+empirical CSVs, validates their semantic relationships, and preserves the
+captions, notes, labels, rounding, ordering and layout.
 
-This follow-up tracks the existing compressed appendix deliverables, makes their
-exporter independent of the cabinet reconstruction pipeline, and restores two
-claims in Appendix B.2. The manuscript remains **28 pages**, with Appendices A
-and B on **pages 24–28**, four compact tables, and one cabinet figure. No main-text
-wording outside B.2 or main-text display was changed in this commit.
+## Five-output dependencies
 
-## Compact-output dependency map
-
-Paths below are relative to `processing/Processing/output/paper/` unless stated
-otherwise. `writing/make_appendix_assets.py` writes only the five manuscript
-assets under `writing/submission_inversions_review/manuscript/`.
+Input paths below are relative to `processing/Processing/output/paper/`.
+Outputs are under `writing/submission_inversions_review/manuscript/`.
 
 | Compact output | Authoritative inputs and checks | Manuscript dependency |
 |---|---|---|
@@ -22,97 +18,60 @@ assets under `writing/submission_inversions_review/manuscript/`.
 | `table_appendix_domain_counts_compact.tex` | `tables/ideological_universe_comparison.csv` checked against the complete minimal-accounting CSV for both universes, both k values and all three elections. The totals in the note are computed from the selected rows. | B.1, Table 6; `tab:one-gap-summary` and `tab:ideological-universe-comparison` |
 | `cabinet_membership_inversions.pdf` | Tracked cabinet-composition export plus the 2014/2022 ordinal party-order CSVs: membership markers, dates, vote shares, seats and all represented parties. | A.4, Figure 6; `fig:cabinet-membership-inversions` |
 
-The tracked composition export repeats every consumed registry field exactly.
-The cabinet table retains its original `raw/cabinet_party_sets.csv` source
-annotation to preserve the accepted artifact bytes; its actual read dependency
-is the tracked composition export. If the raw registry is present, the generator
-requires both sources to agree. A clean checkout therefore needs neither that
-ignored raw registry nor `generated/cabinet_party_sets/` to generate the appendix.
-This does not change either authoritative CSV.
-
-The generator reuses the existing layout, captions, notes, labels, rounding,
-ordering, daggers and figure design. It no longer imports unrelated figure
-pipeline modules, reads the untracked occurrence export, writes under
-`output/paper/latex` or `output/paper/figure_data`, or overwrites the verification
-report. Missing columns/files/expected rows, duplicate selections, inconsistent
-counts and ambiguous cabinet inputs fail explicitly. Python 3.10+, pandas and
-Matplotlib are required; the accepted PDF was reproduced with Matplotlib 3.10.9.
+The cabinet table reads the tracked composition export. Its source annotation
+identifies the underlying raw registry; when that registry is available, the
+generator also checks that all consumed fields agree. Appendix generation and
+packaging work from tracked files alone. PDF producer metadata is not an
+empirical acceptance criterion; figure labels, clipping and overlap are checked.
 
 ## Appendix B.2 correction
 
-Immediately after “The strongest 2014 and 2022 endpoint regions persist.” the
-manuscript now reports all-party k=0 PTB–PR in 2014 at **47.59 percent / 257
-seats**, PP–PL in 2022 at **45.35 percent / 258 seats**, and **five positive A_C
-values among six inversions**, with **MDB–UNIÃO the sole nonpositive case**.
+For all-party k=0, there are six inversions and five have positive A_C.
+The sole nonpositive case is 2022 MDB–UNIÃO. The strongest cases are
+2014 PTB–PR at **47.59 percent / 257 seats** and
+2022 PP–PL at **45.35 percent / 258 seats**.
 
-The paragraph's structured provenance block now includes:
-
-- `tables/ideological_universe_comparison.csv`, data rows 2 and 10, for both strongest cases;
-- `tables/prose_analysis_summaries.csv`, data rows 4 and 10, for the six-inversion total and five positive within-district components;
-- `raw/ideology_k_gap_minimal_accounting_both_universes.csv`, data rows 258–261 and 479–480, for all six inversions and their signs.
-
-Row numbers exclude the CSV header. Semantic keys identify each selection.
-Independent checks classify inversions using integer votes and seats, rank
-strength by exact vote fractions, and use rational `A_C_exact` values for signs.
+These checks use `raw/ideology_k_gap_minimal_accounting_both_universes.csv`,
+selected by election, universe, k and endpoint parties, with integer votes/seats
+and exact A_C signs. The corresponding summaries are in
+`tables/ideological_universe_comparison.csv` and
+`tables/prose_analysis_summaries.csv`.
 
 ## Verification
 
-The detailed, machine-readable results and SHA-256 values are in
-`verification.json`.
+Run from the repository root; use an isolated copy for generation and compilation
+to preserve any local LaTeX auxiliaries. Results are summarized in
+[verification.json](verification.json).
 
 ```bash
+python3 -m unittest discover -s processing/Processing/decomposition/tests -p test_audit_empirical_assets.py
+python3 -m unittest writing.tests.test_package_submission_assets
 python3 writing/make_appendix_assets.py
 python3 processing/Processing/decomposition/validate_prose_provenance.py
-cd writing/submission_inversions_review/manuscript
-SOURCE_DATE_EPOCH=1789387200 FORCE_SOURCE_DATE=1 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main_rw_again.tex
-cd ../../..
+(cd writing/submission_inversions_review/manuscript && latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main_rw_again.tex)
+pdftoppm -f 24 -l 28 -scale-to 1800 -png writing/submission_inversions_review/manuscript/main_rw_again.pdf /tmp/appendix-page
 python3 writing/package_submission_assets.py
 git diff --check
 git diff --cached --check
 ```
 
-- All five generated assets match the existing acceptance hashes in
-  `processing/Processing/output/decomposition/audit/manuscript_empirical_asset_manifest.csv`.
-  That manifest is unchanged. Repeated runs and reversed input-row ordering
-  produce identical assets.
-- Temporary fixture checks cover missing CSVs/columns/cabinet rows/baseline
-  intervals/party-order rows, duplicate selected cases/domains, conflicting
-  registry inputs, reordered inputs, and agreement with the existing raw registry.
-- Independent B.2 source checks pass. The full provenance validator passes
-  **35 blocks / 353 fields**, with no stale row-number warnings, using the
-  existing local provenance CSVs described below.
-- LaTeX completes with **28 pages**, no missing inputs, undefined references,
-  unresolved citations, `??` markers or overfull boxes. The contribution label
-  resolves to **Table 5, page 25**; the one-gap label resolves to **Table 6,
-  page 27**.
-- All five appendix pages were rendered and visually inspected. No clipping,
-  illegible text, bad page breaks or misleading notes were found.
-- The packager refreshes `manuscript/figures.zip` (9 files),
-  `manuscript/tables.zip` (6 files), both `manuscript.zip` files (18 files each),
-  and `publication_artifact_manifest.csv`. Every ZIP member is checked against
-  the freshly built file. Both manuscript archives are identical and include
-  the 28-page manuscript, all four compact tables and the cabinet figure.
-  The stale 42-page manuscript is absent; no LaTeX auxiliaries are packaged.
-- The staged tree is exported without local untracked files to verify generation
-  and compilation before committing. The resulting commit is checked again from
-  a clean checkout. No auxiliary files, logs or caches are committed.
+- Reference-inventory tests: 5 passed; package tests: 6 passed.
+- Appendix generation: five outputs, 35 cabinet sets, 20 baseline intervals,
+  three selected contribution cases, and successful label/clipping checks.
+- Local provenance validation: 35 blocks, 353 fields, no row-number warnings.
+- Build: 28 pages; zero missing inputs, undefined references, unresolved
+  citations or `??` markers. Table 5 resolves on page 25 and Table 6 on page 27.
+  Pages 24–28 were rendered and inspected without clipping, overlap, illegible
+  text or broken layout.
+- Packages: 9 figures, 6 tables, and 18 files in each manuscript archive.
+  Every member matches its current source file; both manuscript archives have
+  identical contents, including the current TeX and PDF. Referenced image paths
+  are preserved. The script verifies membership and contents during execution
+  and creates no persistent publication byte manifest.
 
-## Preserved local work and remaining limitation
+## Remaining limitation
 
-The original working tree contained an unrelated Section 2 sentence edit and a
-modified compiled PDF. Both are preserved in the working tree. The commit and
-submission bundles use the base manuscript plus only the B.2 correction.
-Other untracked work is untouched.
-
-A pristine checkout still cannot run the existing full-manuscript provenance
-validator or packager without these preexisting untracked inputs:
-
-- `generated/cabinet_party_sets/cabinet_party_sets.csv`
-- `generated/cabinet_party_sets/occurrences.csv`
-- `generated/cabinet_party_sets/summary.csv`
-
-For this follow-up, those existing CSVs were copied unchanged into the isolated
-packaging build solely for provenance validation; their hashes are recorded in
-`verification.json`. They are not generator or LaTeX dependencies and are not
-added to this commit. The full replication pipeline, cabinet-party-set scripts,
-pinned V6 release and generated cabinet directory were not repaired or rebuilt.
+Full-manuscript provenance validation still needs the local untracked files
+`generated/cabinet_party_sets/{cabinet_party_sets,occurrences,summary}.csv`.
+They are not required for appendix generation, LaTeX compilation or packaging.
+Rebuilding that cabinet pipeline is outside this cleanup.

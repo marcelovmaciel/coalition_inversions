@@ -4,17 +4,15 @@
 Run from the repository root: python3 writing/make_appendix_assets.py
 Only the five manuscript assets are written; authoritative replication outputs
 are read-only. Cabinet registry fields come from the tracked composition export.
-The original registry source annotation is retained for byte compatibility with
-the accepted compact table. If the raw registry exists, its consumed fields must
-agree with that export. No generated/cabinet_party_sets or release is required.
+The original registry source annotation identifies the underlying registry.
+If the raw registry exists, its consumed fields must agree with that export. No generated/cabinet_party_sets or release is required.
 
-Requires Python 3.10+, matplotlib (reference PDF: 3.10.9), and pandas.
+Requires Python 3.10+, matplotlib, and pandas.
 """
 from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import math
 from datetime import date
@@ -336,7 +334,6 @@ def generate(artifact_root: Path, manuscript_dir: Path) -> dict:
         for row in cabinets:
             counterpart = one(raw, cabinet_party_set_id=row['cabinet_party_set_id'])
             check(all(row[k] == counterpart[k] for k in CABINET_FIELDS), f"Ambiguous registry/composition inputs: {row['display_label']}")
-        sources['registry_crosscheck'] = registry
     orders = {}
     for year in YEARS:
         rows = data[f'order_{year}']
@@ -402,7 +399,7 @@ def generate(artifact_root: Path, manuscript_dir: Path) -> dict:
         'table_appendix_selected_party_contributions.tex': (sources['contributions'], contribution_table(selected)),
         'table_appendix_domain_counts_compact.tex': (sources['counts'], count_table(data['counts'])),
     }
-    # Preserve the accepted source annotations even with --artifact-root elsewhere.
+    # Preserve the source annotations even with --artifact-root elsewhere.
     manuscript_dir.mkdir(parents=True, exist_ok=True)
     for name, (path, content) in outputs.items():
         canonical = DEFAULT_ARTIFACT_ROOT / path.relative_to(artifact_root)
@@ -421,8 +418,8 @@ def generate(artifact_root: Path, manuscript_dir: Path) -> dict:
     finally:
         plt.close(figure)
     return {
-        'source_sha256': {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources.values()},
-        'asset_sha256': {name: hashlib.sha256((manuscript_dir/name).read_bytes()).hexdigest() for name in (*outputs, FIGURE_STEM+'.pdf')},
+        'status': 'passed',
+        'outputs': [*outputs, FIGURE_STEM+'.pdf'],
         'cabinet_sets': len(cabinets), 'baseline_intervals': len(intervals), 'selected_cases': len(selected),
         'figure_label_overlap_and_clipping_checks': 'passed',
     }

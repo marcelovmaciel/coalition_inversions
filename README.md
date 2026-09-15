@@ -237,13 +237,23 @@ upstream asset synchronization in the production workflow. Full cabinet historie
 all baseline interval memberships, complete member/district decompositions,
 closure/overlap diagnostics, and both original robustness tables remain generated
 and available for replication. The compact inputs use separate filenames, so the
-full outputs are never overwritten by this editorial export. Figure 3 and the new
-cabinet panels share `load_seat_winning_order` in `make_coalition_figures.py`.
+full outputs are never overwritten by this editorial export. Figure 3 and the
+cabinet panels use the same seat-winning ordinal party orders.
 
 To refresh only the appendix presentation from existing outputs (no new empirical
 analysis), run `python3 writing/make_appendix_assets.py`, then the LaTeX command
-above. Its validation summary is `writing/appendix_revision/verification.json`;
-the revision and dependency map are in `writing/appendix_revision/CHANGELOG.md`.
+above. The generator prints semantic validation outcomes; the concise verification
+report is `writing/appendix_revision/verification.json`, and the dependency map is
+in `writing/appendix_revision/CHANGELOG.md`. Rendered PDF metadata is not an
+empirical acceptance criterion.
+
+Run `python3 writing/package_submission_assets.py` to refresh the submission
+archives from the current manuscript source, compiled PDF, bibliography and
+referenced assets. The script requires only tracked publication inputs and
+verifies exact archive membership and every member against its current file
+during execution, including agreement between the two manuscript archives. It
+does not create a persistent publication byte manifest. Full-manuscript provenance
+validation is a separate task.
 
 Appendix A.3 prints the two inverted cabinets and baseline MDB–UNIÃO from the
 full `latex/table_coalition_party_component_extremes.tex` export. The decomposition runner
@@ -332,8 +342,11 @@ julia --startup-file=no --project=processing/Processing processing/Processing/de
 both PDFs, then runs `decomposition/audit_empirical_assets.py` before packaging.
 That final audit validates local prose provenance and writes current CSV row
 numbers to `output/decomposition/audit/manuscript_prose_provenance.csv`.
-Packaging also requires successful provenance validation. A changed CSV value
-fails the audit; update the literal claim and its comment together after review.
+The manuscript asset inventory, `manuscript_empirical_asset_manifest.csv`, records
+only `reference_source`, `reference_kind` and `target`; missing referenced files
+fail the audit. The separate paper-output audit retains its empirical hashes.
+A changed CSV value fails provenance validation; update the literal claim and its
+comment together after review.
 The recorded baseline uses Julia 1.12.7 with generic CPU code, compiled modules
 and package images disabled, and one Julia/GC thread. Use the existing
 `JULIA_BIN` override to reproduce that runtime; even last-digit raw drift from a

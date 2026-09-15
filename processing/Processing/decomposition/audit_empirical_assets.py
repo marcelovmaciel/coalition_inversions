@@ -2,8 +2,8 @@
 """Audit generated paper artifacts and active-manuscript empirical assets.
 
 This script is deliberately independent of the empirical calculations. It
-checks the final generation state, records byte sizes and SHA-256 digests, and
-fails if the paper manifest or active manuscript points at a missing file.
+hashes the frozen paper outputs and inventories active manuscript references.
+It fails if the paper manifest or active manuscript points at a missing file.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from validate_prose_provenance import ProvenanceError, validate_provenance
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 PAPER_HASH_FILENAME = "paper_artifact_hashes.csv"
-MANUSCRIPT_HASH_FILENAME = "manuscript_empirical_asset_manifest.csv"
+MANUSCRIPT_REFERENCE_FILENAME = "manuscript_empirical_asset_manifest.csv"
 PAPER_HASH_FIELDS = (
     "path",
     "artifact_type",
@@ -34,12 +34,10 @@ PAPER_HASH_FIELDS = (
     "bytes",
     "sha256",
 )
-MANUSCRIPT_HASH_FIELDS = (
+MANUSCRIPT_REFERENCE_FIELDS = (
     "reference_source",
     "reference_kind",
     "target",
-    "bytes",
-    "sha256",
 )
 MANIFEST_REQUIRED_FIELDS = {
     "path",
@@ -63,10 +61,10 @@ class AuditError(RuntimeError):
 @dataclass(frozen=True)
 class AuditResult:
     paper_records: tuple[dict[str, object], ...]
-    manuscript_records: tuple[dict[str, object], ...]
+    manuscript_reference_records: tuple[dict[str, object], ...]
     unreferenced_manuscript_assets: tuple[Path, ...]
     paper_hash_path: Path
-    manuscript_hash_path: Path
+    manuscript_reference_path: Path
     provenance_records: tuple[dict[str, object], ...]
     provenance_warnings: tuple[str, ...]
 
@@ -237,7 +235,7 @@ def audit_manuscript_references(
     *,
     repository_root: Path | None = None,
 ) -> list[dict[str, object]]:
-    """Validate and hash local generated TeX/PDF references in manuscript files."""
+    """Validate and inventory active local asset references in manuscript files."""
 
     records: list[dict[str, object]] = []
     missing_targets: list[str] = []
@@ -265,14 +263,11 @@ def audit_manuscript_references(
                     f"{reference_source} -> {_display_path(target, repository_root)}"
                 )
                 continue
-            size, digest = sha256_and_size(target)
             records.append(
                 {
                     "reference_source": reference_source,
                     "reference_kind": kind,
                     "target": _display_path(target, repository_root),
-                    "bytes": size,
-                    "sha256": digest,
                 }
             )
 
@@ -294,12 +289,12 @@ def audit_manuscript_references(
 
 def find_unreferenced_manuscript_assets(
     generated_directory: Path,
-    manuscript_records: Iterable[dict[str, object]],
+    manuscript_reference_records: Iterable[dict[str, object]],
     *,
     manuscript_sources: Sequence[Path] = (),
     repository_root: Path | None = None,
 ) -> list[Path]:
-    """Return local PDF/TeX files not referenced by the audited manuscript."""
+    """Return local manuscript renderings not referenced by the audited sources."""
 
     if not generated_directory.is_dir():
         raise AuditError(
@@ -307,7 +302,7 @@ def find_unreferenced_manuscript_assets(
         )
 
     referenced: set[Path] = set()
-    for record in manuscript_records:
+    for record in manuscript_reference_records:
         display_target = Path(str(record["target"]))
         if display_target.is_absolute():
             referenced.add(display_target.resolve())
@@ -320,7 +315,7 @@ def find_unreferenced_manuscript_assets(
             candidate.resolve()
             for candidate in generated_directory.rglob("*")
             if candidate.is_file()
-            and candidate.suffix.lower() in {".pdf", ".tex"}
+            and candidate.suffix.lower() in {".pdf", ".tex", ".png", ".jpg", ".jpeg"}
             and candidate.resolve() not in referenced
             and candidate.resolve() not in excluded
         ),
@@ -365,10 +360,10 @@ def run_audit(
     generated_manuscript_directory: Path | None = None,
     freeze_prose: bool = False,
 ) -> AuditResult:
-    """Validate both inventories, then write their reproducible hash manifests."""
+    """Write the paper-output hash audit and manuscript reference inventory."""
 
     paper_records = audit_paper_manifest(paper_manifest)
-    manuscript_records = audit_manuscript_references(
+    manuscript_reference_records = audit_manuscript_references(
         manuscript_sources,
         repository_root=repository_root,
     )
@@ -388,18 +383,18 @@ def run_audit(
     if generated_manuscript_directory is not None:
         unreferenced = find_unreferenced_manuscript_assets(
             generated_manuscript_directory,
-            manuscript_records,
+            manuscript_reference_records,
             manuscript_sources=manuscript_sources,
             repository_root=repository_root,
         )
 
     paper_hash_path = audit_directory / PAPER_HASH_FILENAME
-    manuscript_hash_path = audit_directory / MANUSCRIPT_HASH_FILENAME
+    manuscript_reference_path = audit_directory / MANUSCRIPT_REFERENCE_FILENAME
     _write_csv_atomic(paper_hash_path, PAPER_HASH_FIELDS, paper_records)
     _write_csv_atomic(
-        manuscript_hash_path,
-        MANUSCRIPT_HASH_FIELDS,
-        manuscript_records,
+        manuscript_reference_path,
+        MANUSCRIPT_REFERENCE_FIELDS,
+        manuscript_reference_records,
     )
     _write_csv_atomic(
         audit_directory / "manuscript_prose_provenance.csv",
@@ -408,10 +403,10 @@ def run_audit(
     )
     return AuditResult(
         paper_records=tuple(paper_records),
-        manuscript_records=tuple(manuscript_records),
+        manuscript_reference_records=tuple(manuscript_reference_records),
         unreferenced_manuscript_assets=tuple(unreferenced),
         paper_hash_path=paper_hash_path,
-        manuscript_hash_path=manuscript_hash_path,
+        manuscript_reference_path=manuscript_reference_path,
         provenance_records=tuple(provenance_records),
         provenance_warnings=tuple(provenance_warnings),
     )
@@ -453,7 +448,7 @@ def _argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--report-unreferenced",
         action="store_true",
-        help="Report unreferenced PDF/TeX files without failing the audit.",
+        help="Report unreferenced manuscript assets without failing the audit.",
     )
     parser.add_argument("--freeze-prose", action="store_true", help="Audit assets but report stale frozen narrative separately; never edit prose.")
     return parser
@@ -498,8 +493,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"wrote {result.paper_hash_path}"
     )
     print(
-        f"Validated {len(result.manuscript_records)} manuscript asset references; "
-        f"wrote {result.manuscript_hash_path}"
+        f"Validated {len(result.manuscript_reference_records)} manuscript asset references; "
+        f"wrote {result.manuscript_reference_path}"
     )
     print(
         f"Validated {len({r['block'] for r in result.provenance_records})} prose provenance blocks, "
@@ -510,11 +505,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"WARNING: {warning}", file=sys.stderr)
     if args.report_unreferenced:
         if result.unreferenced_manuscript_assets:
-            print("Unreferenced manuscript PDF/TeX files (non-fatal):")
+            print("Unreferenced manuscript assets (non-fatal):")
             for path in result.unreferenced_manuscript_assets:
                 print(f"- {_display_path(path, repo_root)}")
         else:
-            print("Unreferenced manuscript PDF/TeX files: none")
+            print("Unreferenced manuscript assets: none")
     return 0
 
 

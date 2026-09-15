@@ -91,7 +91,7 @@ class EmpiricalAssetAuditTests(unittest.TestCase):
             ),
         }
 
-    def test_writes_hash_manifests_from_valid_temporary_fixture(self) -> None:
+    def test_writes_paper_hashes_and_manuscript_reference_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_root:
             fixture = self._fixture(temporary_root)
             result = audit.run_audit(
@@ -119,11 +119,18 @@ class EmpiricalAssetAuditTests(unittest.TestCase):
                 hashlib.sha256(fixture["data"].read_bytes()).hexdigest(),
             )
 
-            with result.manuscript_hash_path.open(
+            with result.manuscript_reference_path.open(
                 "r", encoding="utf-8", newline=""
             ) as handle:
-                manuscript_rows = list(csv.DictReader(handle))
+                reader = csv.DictReader(handle)
+                self.assertEqual(reader.fieldnames, ["reference_source", "reference_kind", "target"])
+                manuscript_rows = list(reader)
             self.assertEqual(len(manuscript_rows), 2)
+            self.assertEqual(
+                {(row["reference_source"].rsplit(":", 1)[1], row["reference_kind"])
+                 for row in manuscript_rows},
+                {("3", "input"), ("4", "includegraphics")},
+            )
             self.assertEqual(
                 {row["target"] for row in manuscript_rows},
                 {
@@ -141,6 +148,29 @@ class EmpiricalAssetAuditTests(unittest.TestCase):
                 [path.name for path in result.unreferenced_manuscript_assets],
                 ["unreferenced_table.tex"],
             )
+
+    def test_rendering_changes_do_not_change_reference_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_root:
+            fixture = self._fixture(temporary_root)
+            before = audit.audit_manuscript_references([fixture["main"]])
+            fixture["table"].write_text("Revised table rendering\n", encoding="utf-8")
+            fixture["figure"].write_bytes(b"Updated PDF rendering")
+            self.assertEqual(before, audit.audit_manuscript_references([fixture["main"]]))
+
+    def test_tracks_image_formats_and_reports_unreferenced_images(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_root:
+            fixture = self._fixture(temporary_root)
+            with fixture["main"].open("a", encoding="utf-8") as source:
+                for suffix in ("png", "jpg", "jpeg"):
+                    source.write("\\includegraphics{image." + suffix + "}\n")
+                    (fixture["manuscript"] / ("image." + suffix)).write_bytes(b"image")
+            orphan = fixture["manuscript"] / "orphan.png"
+            orphan.write_bytes(b"unreferenced")
+            records = audit.audit_manuscript_references([fixture["main"]])
+            self.assertEqual(len(records), 5)
+            self.assertIn(orphan, audit.find_unreferenced_manuscript_assets(
+                fixture["manuscript"], records, manuscript_sources=[fixture["main"]],
+            ))
 
     def test_fails_if_paper_manifest_lists_missing_file(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_root:
