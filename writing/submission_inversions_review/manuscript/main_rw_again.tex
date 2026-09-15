@@ -2706,13 +2706,107 @@ between-district components that more than offset the shortfall.
 
 Restoring parties without seats removes the 2018 exact-connected PT--PSDB
 inversion: its interval includes PMB and acquires a vote majority. The strongest
-2014 and 2022 endpoint regions persist. Under all-party \(k=1\), their strongest
+2014 and 2022 endpoint regions persist. Under all-party \(k=0\), the strongest
+cases remain PTB--PR in 2014, with 47.59 percent of the vote and 257 seats, and
+PP--PL in 2022, with 45.35 percent and 258 seats. Among the six all-party
+\(k=0\) inversions, \(A_C>0\) in five; MDB--UNIÃO is the sole exception.
+Under all-party \(k=1\), their strongest
 cases omit PPL and DC, respectively, recovering the primary PTB--PR and PP--PL
 memberships and outcomes. The strongest 2018 all-party one-gap case is
 PCdoB--PODE omitting PSDB, with 47.82 percent of the vote and the same 257 seats,
 compared with 47.59 percent in the primary universe.
 
 % PROVENANCE-BEGIN appendix-compact-universe-strongest
+% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% row:
+%   key: election=2014; ideological_universe=all_parties; k=0
+%   row_at_generation: 2
+%   fields:
+%     strongest_inversion_coalition: PTB--PR
+%     strongest_inversion_vote_share: 0.47591256254894826
+%     strongest_inversion_seats: 257
+% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% row:
+%   key: election=2022; ideological_universe=all_parties; k=0
+%   row_at_generation: 10
+%   fields:
+%     strongest_inversion_coalition: PP--PL
+%     strongest_inversion_vote_share: 0.4534989317772354
+%     strongest_inversion_seats: 258
+% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% row:
+%   key: summary=all-parties-k0-totals; metric=minimal_inversions; aggregation=sum; ideological_universe=all_parties; k=0; election=all
+%   row_at_generation: 4
+%   fields:
+%     value: 6
+%     source_row_count: 3
+% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% row:
+%   key: summary=all-parties-k0-positive-within; metric=A_C; aggregation=count_positive; ideological_universe=all_parties; k=0; election=all
+%   row_at_generation: 10
+%   fields:
+%     value: 5
+%     source_row_count: 6
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PSB; right_endpoint=PTN
+%   row_at_generation: 258
+%   fields:
+%     votes: 47627762
+%     national_vote_total: 97355354
+%     seats: 260
+%     A_C: 10.508783851460613
+%     inversion: true
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PTB; right_endpoint=PR
+%   row_at_generation: 259
+%   fields:
+%     votes: 46332636
+%     national_vote_total: 97355354
+%     seats: 257
+%     A_C: 11.620538081371619
+%     inversion: true
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PT DO B; right_endpoint=PSDC
+%   row_at_generation: 260
+%   fields:
+%     votes: 47691320
+%     national_vote_total: 97355354
+%     seats: 257
+%     A_C: 6.2665828795721277
+%     inversion: true
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=SOLIDARIEDADE; right_endpoint=PSL
+%   row_at_generation: 261
+%   fields:
+%     votes: 47687533
+%     national_vote_total: 97355354
+%     seats: 257
+%     A_C: 6.5862104528808336
+%     inversion: true
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO
+%   row_at_generation: 479
+%   fields:
+%     votes: 54687303
+%     national_vote_total: 109413508
+%     seats: 265
+%     A_C: -1.2923532538854881
+%     inversion: true
+% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% row:
+%   key: election=2022; ideological_universe=all_parties; k=0; left_endpoint=PP; right_endpoint=PL
+%   row_at_generation: 480
+%   fields:
+%     votes: 49618909
+%     national_vote_total: 109413508
+%     seats: 258
+%     A_C: 22.820505594331628
+%     inversion: true
 % source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=1

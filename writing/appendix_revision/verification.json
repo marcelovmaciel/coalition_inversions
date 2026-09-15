@@ -1,0 +1,451 @@
+{
+  "schema_version": 1,
+  "base_commit": "239d66b3630babc70ea2de10aaf070f45180f069",
+  "scope": "Compact appendix deliverables and Appendix B.2 evidence only",
+  "b2_source_row_checks": {
+    "passed": true,
+    "row_number_convention": "1-based data rows excluding header",
+    "strongest_cases": [
+      {
+        "election": 2014,
+        "comparison_data_row": 2,
+        "minimal_accounting_data_row": 259,
+        "coalition": "PTB--PR",
+        "vote_percent_rounded": "47.59",
+        "seats": 257,
+        "votes": 46332636,
+        "national_vote_total": 97355354,
+        "unique_lowest_vote_share_verified": true
+      },
+      {
+        "election": 2022,
+        "comparison_data_row": 10,
+        "minimal_accounting_data_row": 480,
+        "coalition": "PP--PL",
+        "vote_percent_rounded": "45.35",
+        "seats": 258,
+        "votes": 49618909,
+        "national_vote_total": 109413508,
+        "unique_lowest_vote_share_verified": true
+      }
+    ],
+    "summary_rows": {
+      "positive_A": 10,
+      "total_inversions": 4
+    },
+    "minimal_inversions": 6,
+    "positive_A": 5,
+    "sole_nonpositive_A": "2022/MDB--UNIÃO",
+    "inversions": [
+      {
+        "data_row": 258,
+        "election": "2014",
+        "left_endpoint": "PSB",
+        "right_endpoint": "PTN",
+        "votes": "47627762",
+        "national_vote_total": "97355354",
+        "seats": "260",
+        "A_C": "10.508783851460613",
+        "exact_A_positive": true
+      },
+      {
+        "data_row": 259,
+        "election": "2014",
+        "left_endpoint": "PTB",
+        "right_endpoint": "PR",
+        "votes": "46332636",
+        "national_vote_total": "97355354",
+        "seats": "257",
+        "A_C": "11.620538081371619",
+        "exact_A_positive": true
+      },
+      {
+        "data_row": 260,
+        "election": "2014",
+        "left_endpoint": "PT DO B",
+        "right_endpoint": "PSDC",
+        "votes": "47691320",
+        "national_vote_total": "97355354",
+        "seats": "257",
+        "A_C": "6.2665828795721277",
+        "exact_A_positive": true
+      },
+      {
+        "data_row": 261,
+        "election": "2014",
+        "left_endpoint": "SOLIDARIEDADE",
+        "right_endpoint": "PSL",
+        "votes": "47687533",
+        "national_vote_total": "97355354",
+        "seats": "257",
+        "A_C": "6.5862104528808336",
+        "exact_A_positive": true
+      },
+      {
+        "data_row": 479,
+        "election": "2022",
+        "left_endpoint": "MDB",
+        "right_endpoint": "UNIÃO",
+        "votes": "54687303",
+        "national_vote_total": "109413508",
+        "seats": "265",
+        "A_C": "-1.2923532538854881",
+        "exact_A_positive": false
+      },
+      {
+        "data_row": 480,
+        "election": "2022",
+        "left_endpoint": "PP",
+        "right_endpoint": "PL",
+        "votes": "49618909",
+        "national_vote_total": "109413508",
+        "seats": "258",
+        "A_C": "22.820505594331628",
+        "exact_A_positive": true
+      }
+    ]
+  },
+  "assets": {
+    "passed": true,
+    "acceptance_manifest": "processing/Processing/output/decomposition/audit/manuscript_empirical_asset_manifest.csv",
+    "manifest_unchanged": true,
+    "repeat_generation_identical": true,
+    "files": [
+      {
+        "path": "writing/submission_inversions_review/manuscript/table_appendix_cabinet_membership_compact.tex",
+        "expected_sha256": "8e1a7633908e954d1fc2b7dca3008e70e8e8ca507603b6d5859d4edb83a5c55f",
+        "actual_sha256": "8e1a7633908e954d1fc2b7dca3008e70e8e8ca507603b6d5859d4edb83a5c55f",
+        "matches": true
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/table_appendix_baseline_intervals_compact.tex",
+        "expected_sha256": "6fe2ef8ded8feb7b7e9f3eb7776560eccb23cc2e1ce1ade4b5755a88f0db67dd",
+        "actual_sha256": "6fe2ef8ded8feb7b7e9f3eb7776560eccb23cc2e1ce1ade4b5755a88f0db67dd",
+        "matches": true
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/table_appendix_selected_party_contributions.tex",
+        "expected_sha256": "6334684115372a89ee832b3211ddf658d0ec5c983151f11705f3afdda2139455",
+        "actual_sha256": "6334684115372a89ee832b3211ddf658d0ec5c983151f11705f3afdda2139455",
+        "matches": true
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/cabinet_membership_inversions.pdf",
+        "expected_sha256": "9df27f8d47c41bf18a194124fb96ba4b25eab02d092bfd55a62e054220e12156",
+        "actual_sha256": "9df27f8d47c41bf18a194124fb96ba4b25eab02d092bfd55a62e054220e12156",
+        "matches": true
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/table_appendix_domain_counts_compact.tex",
+        "expected_sha256": "45e380042e1a0faa4edffcbc38e5607364cfdc53fc58957f18e9d7ed5db372dd",
+        "actual_sha256": "45e380042e1a0faa4edffcbc38e5607364cfdc53fc58957f18e9d7ed5db372dd",
+        "matches": true
+      }
+    ]
+  },
+  "sources": {
+    "processing/Processing/output/paper/tables/table_appendix_cabinet_composition.csv": "8f94bcba938658fa5b0f3c4c9dc8905639f86eee21175cc3a5b3ac54caac77dc",
+    "processing/Processing/output/paper/tables/table_appendix_minimal_connected_winning_intervals.csv": "452596f83cc37bc92758f4da060ec7f073f7991c417ac29c9276c3bccff68f55",
+    "processing/Processing/output/paper/tables/table_coalition_party_component_extremes.csv": "b5939dc4215c04e715c7eaf80198112655e7511ae029bb082051dbb74c1eaa28",
+    "processing/Processing/output/paper/tables/ideological_universe_comparison.csv": "daa94e0cfe9560560b205c89d608f397cb141a18f0cae0753aee64cbec141a42",
+    "processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv": "47f0b5055dac1b54451b329d429edd00b01264348b0153b284f88f42e8e591b0",
+    "processing/Processing/output/paper/raw/ideology_order_2014.csv": "a1fbd19c8ec4b29481281dd9722fc8d9b6dc121e61c2d029a1d94fecfee61fb0",
+    "processing/Processing/output/paper/raw/ideology_order_2018.csv": "e880635ab1e315e4fa7a58db753ccee39be2d8cdce582df58591818a48550fb1",
+    "processing/Processing/output/paper/raw/ideology_order_2022.csv": "4f4f79df77e4d65458605bab93cd2cb45a5728837e91eaa29748a1f997b66a94",
+    "processing/Processing/output/paper/tables/prose_analysis_summaries.csv": "bed65bde106b7ea4b1c3c8196de69e94083be20d25ca0b49074c9d909268b6e6"
+  },
+  "generator_guards": {
+    "passed": true,
+    "checks": [
+      {
+        "case": "missing CSV",
+        "passed": true,
+        "error": "Missing authoritative CSV: <fixture>/tables/ideological_universe_comparison.csv"
+      },
+      {
+        "case": "missing column",
+        "passed": true,
+        "error": "Missing columns in <fixture>/tables/ideological_universe_comparison.csv: ['minimal_inversions']"
+      },
+      {
+        "case": "missing cabinet row",
+        "passed": true,
+        "error": "Missing or unexpected cabinet registry labels"
+      },
+      {
+        "case": "missing baseline row",
+        "passed": true,
+        "error": "Missing or unexpected baseline intervals"
+      },
+      {
+        "case": "missing party-order row",
+        "passed": true,
+        "error": "Missing or inconsistent party-order rows: 2014"
+      },
+      {
+        "case": "duplicate selected case",
+        "passed": true,
+        "error": "Duplicate selection in <fixture>/tables/table_coalition_party_component_extremes.csv: {'case_identifier': 'cabinet/C2014-a264923b9881ebab3d9b'}"
+      },
+      {
+        "case": "duplicate domain",
+        "passed": true,
+        "error": "Duplicate selection in <fixture>/tables/ideological_universe_comparison.csv: {'election': '2014', 'ideological_universe': 'seat_winning', 'k': '0'}"
+      },
+      {
+        "case": "ambiguous registry/composition",
+        "passed": true,
+        "error": "Ambiguous registry/composition inputs: 14-01"
+      },
+      {
+        "case": "reordered source rows produce identical assets",
+        "passed": true
+      },
+      {
+        "case": "local raw registry matches tracked composition fields and all asset hashes",
+        "passed": true
+      }
+    ]
+  },
+  "compilation": {
+    "passed": true,
+    "command": "SOURCE_DATE_EPOCH=1789387200 FORCE_SOURCE_DATE=1 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main_rw_again.tex",
+    "working_directory": "writing/submission_inversions_review/manuscript",
+    "exit_code": 0,
+    "pages": 28,
+    "appendix_pages": [
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "missing_inputs": 0,
+    "undefined_references": 0,
+    "unresolved_citations": 0,
+    "question_mark_markers": 0,
+    "overfull_boxes": 0,
+    "underfull_boxes": 1,
+    "pdf_sha256": "ea2aa41c522bdc8a2d00709a55d11826ef999870145ca6a673ed5c2c64bbd439",
+    "log_sha256": "42ab70c596ceed07e32b00e432fb27efa0b886312a693a23a0fd5cf8ffc70ce4"
+  },
+  "references": {
+    "passed": true,
+    "labels": {
+      "tab:coalition-party-component-extremes": {
+        "table": 5,
+        "page": 25
+      },
+      "tab:one-gap-summary": {
+        "table": 6,
+        "page": 27
+      }
+    }
+  },
+  "visual_inspection": {
+    "passed": true,
+    "method": "pdftoppm -f 24 -l 28 -scale-to 1600 -png; inspected all five full-page renders",
+    "pages": [
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "clipping": false,
+    "illegible_text": false,
+    "bad_page_breaks": false,
+    "misleading_notes": false,
+    "notes": "All 35 cabinet sets and daggers fit p.24; baseline and contribution tables fit p.25; both cabinet panels and legend fit p.26; domain counts and qualifications fit p.27; restored B.2 evidence fits p.28."
+  },
+  "provenance": {
+    "passed_with_existing_local_sources": true,
+    "blocks": 35,
+    "fields": 353,
+    "row_number_warnings": 0,
+    "command": "python3 processing/Processing/decomposition/validate_prose_provenance.py",
+    "local_untracked_inputs": [
+      {
+        "path": "generated/cabinet_party_sets/cabinet_party_sets.csv",
+        "sha256": "3df76c16ff77a6d9e3f43b941d9959402c274fec3483b361d3fb56b89ad0aa52"
+      },
+      {
+        "path": "generated/cabinet_party_sets/occurrences.csv",
+        "sha256": "5974f8f5e1abcd16cb73bfcf1e2e1777d6a7e212aa341656cd901f3fbc5ee3ab"
+      },
+      {
+        "path": "generated/cabinet_party_sets/summary.csv",
+        "sha256": "f4122eceab903e95766fdc1f1089a7fb61ee73bba7754b20ca9f26a10fed2c7e"
+      }
+    ]
+  },
+  "packages": {
+    "passed": true,
+    "command": "python3 writing/package_submission_assets.py",
+    "exit_code": 0,
+    "stale_42_page_manuscript_absent": true,
+    "inner_outer_manuscript_archives_identical": true,
+    "archives": [
+      {
+        "path": "writing/submission_inversions_review/manuscript/figures.zip",
+        "sha256": "60c7ec79e7bc0cc8031e45413f22839a070eac8cae89395299a18625959500fb",
+        "members": [
+          "cabinet_membership_inversions.pdf",
+          "cross_domain_components.pdf",
+          "ideological_interval_heatmap_2014.pdf",
+          "ideological_interval_heatmap_2018.pdf",
+          "ideological_interval_heatmap_2022.pdf",
+          "ideological_interval_heatmap_legend.pdf",
+          "observed_coalition_timeline.pdf",
+          "party_representation_profile.pdf",
+          "party_vote_share_vs_seat_share.pdf"
+        ],
+        "all_members_match_fresh_files": true,
+        "required_contents_present": true,
+        "manuscript_pages": null
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/tables.zip",
+        "sha256": "d90000252a1b5ebd4b905b7e7b016531b5daf28fc2c3304bfc9925964b8049c2",
+        "members": [
+          "table_accounting_minimal_ideological.tex",
+          "table_appendix_baseline_intervals_compact.tex",
+          "table_appendix_cabinet_membership_compact.tex",
+          "table_appendix_domain_counts_compact.tex",
+          "table_appendix_selected_party_contributions.tex",
+          "table_observed_inversion_decomposition.tex"
+        ],
+        "all_members_match_fresh_files": true,
+        "required_contents_present": true,
+        "manuscript_pages": null
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript/manuscript.zip",
+        "sha256": "248d1606000ae40f3799b959588e34063e55ca3a9f5f79d8fd504a178c41021b",
+        "members": [
+          "cabinet_membership_inversions.pdf",
+          "cross_domain_components.pdf",
+          "ideological_interval_heatmap_2014.pdf",
+          "ideological_interval_heatmap_2018.pdf",
+          "ideological_interval_heatmap_2022.pdf",
+          "ideological_interval_heatmap_legend.pdf",
+          "main_rw_again.pdf",
+          "main_rw_again.tex",
+          "observed_coalition_timeline.pdf",
+          "party_representation_profile.pdf",
+          "party_vote_share_vs_seat_share.pdf",
+          "refs2.bib",
+          "table_accounting_minimal_ideological.tex",
+          "table_appendix_baseline_intervals_compact.tex",
+          "table_appendix_cabinet_membership_compact.tex",
+          "table_appendix_domain_counts_compact.tex",
+          "table_appendix_selected_party_contributions.tex",
+          "table_observed_inversion_decomposition.tex"
+        ],
+        "all_members_match_fresh_files": true,
+        "required_contents_present": true,
+        "manuscript_pages": 28
+      },
+      {
+        "path": "writing/submission_inversions_review/manuscript.zip",
+        "sha256": "248d1606000ae40f3799b959588e34063e55ca3a9f5f79d8fd504a178c41021b",
+        "members": [
+          "cabinet_membership_inversions.pdf",
+          "cross_domain_components.pdf",
+          "ideological_interval_heatmap_2014.pdf",
+          "ideological_interval_heatmap_2018.pdf",
+          "ideological_interval_heatmap_2022.pdf",
+          "ideological_interval_heatmap_legend.pdf",
+          "main_rw_again.pdf",
+          "main_rw_again.tex",
+          "observed_coalition_timeline.pdf",
+          "party_representation_profile.pdf",
+          "party_vote_share_vs_seat_share.pdf",
+          "refs2.bib",
+          "table_accounting_minimal_ideological.tex",
+          "table_appendix_baseline_intervals_compact.tex",
+          "table_appendix_cabinet_membership_compact.tex",
+          "table_appendix_domain_counts_compact.tex",
+          "table_appendix_selected_party_contributions.tex",
+          "table_observed_inversion_decomposition.tex"
+        ],
+        "all_members_match_fresh_files": true,
+        "required_contents_present": true,
+        "manuscript_pages": 28
+      }
+    ],
+    "publication_manifest_matches_staged_files": true
+  },
+  "authoritative_outputs": {
+    "unchanged": true,
+    "tracked_outputs_compared_to_base": 327,
+    "excluded_packager_owned_manifest": "processing/Processing/output/decomposition/audit/publication_artifact_manifest.csv"
+  },
+  "remaining_limitations": [
+    "A pristine checkout cannot run the existing full-manuscript provenance validator or packager without generated/cabinet_party_sets/{cabinet_party_sets,occurrences,summary}.csv. The targeted packaging check used the existing local CSVs unchanged; these unrelated files are not added.",
+    "The full replication pipeline was not run or repaired; preexisting cabinet_party_sets script and pinned V6 release dependencies remain outside this follow-up. The compact generator and LaTeX build use tracked files only."
+  ],
+  "clean_checkout": {
+    "passed": true,
+    "method": "git checkout-index --all into a new empty directory; only staged tracked files exported",
+    "generator_exit_code": 0,
+    "generator_matches_all_five_acceptance_hashes": true,
+    "compile_command": "SOURCE_DATE_EPOCH=1789387200 FORCE_SOURCE_DATE=1 latexmk -gg -pdf -interaction=nonstopmode -halt-on-error -file-line-error main_rw_again.tex",
+    "compile_exit_code": 0,
+    "pages": 28,
+    "pdf_text_identical_to_packaged_manuscript": true,
+    "pdf_sha256": "ea2aa41c522bdc8a2d00709a55d11826ef999870145ca6a673ed5c2c64bbd439",
+    "pdf_bytes_identical_to_packaged_manuscript": true,
+    "all_project_latex_inputs_tracked": true,
+    "project_latex_inputs": {
+      "writing/submission_inversions_review/manuscript/cabinet_membership_inversions.pdf": "9df27f8d47c41bf18a194124fb96ba4b25eab02d092bfd55a62e054220e12156",
+      "writing/submission_inversions_review/manuscript/cross_domain_components.pdf": "1ca60191421aaec981c722ea73017cd9914d2378cc600ff82c55fc76b911e858",
+      "writing/submission_inversions_review/manuscript/figures/minimal_connected_winning_inversions_3x1_diamond.png": "68c9550dffcfd0b81806ed3ae74613153d37238433bb051f668713fa4ffb8c5c",
+      "writing/submission_inversions_review/manuscript/ideological_interval_heatmap_2014.pdf": "d96658ae7776e22203fd57e5adf2fcd0fdb80d24a92272f4ce9f753f9f9f6bea",
+      "writing/submission_inversions_review/manuscript/ideological_interval_heatmap_2018.pdf": "23b86a010b20d320b1d7927ae408151749fbf5e0c478e05f341ee15ce5414cdf",
+      "writing/submission_inversions_review/manuscript/ideological_interval_heatmap_2022.pdf": "d16b56ca41f94706367ac9a4e9766b9f7e0ba8289626c3e2d536f3cd83f32494",
+      "writing/submission_inversions_review/manuscript/ideological_interval_heatmap_legend.pdf": "3473656e7f705c53a35defef60b00ef60e099ebd8812b18dc9faa144354733c5",
+      "writing/submission_inversions_review/manuscript/main_rw_again.tex": "f886c8b2ca03aa2ed4dbe668602e4a644ab242eadf43ef04be586304d0779df5",
+      "writing/submission_inversions_review/manuscript/observed_coalition_timeline.pdf": "5ad11d6ba4488f0f4a41038e94d0e007fd1028f12577ba12b4925a91d893d08f",
+      "writing/submission_inversions_review/manuscript/party_representation_profile.pdf": "00293786e202c5aba014e1655bf3468271b8027c28803b89ee39331fada71035",
+      "writing/submission_inversions_review/manuscript/table_accounting_minimal_ideological.tex": "d4a61439843ac7d4a507dcc973433c1161b896bba483108449ab721c8b736663",
+      "writing/submission_inversions_review/manuscript/table_appendix_baseline_intervals_compact.tex": "6fe2ef8ded8feb7b7e9f3eb7776560eccb23cc2e1ce1ade4b5755a88f0db67dd",
+      "writing/submission_inversions_review/manuscript/table_appendix_cabinet_membership_compact.tex": "8e1a7633908e954d1fc2b7dca3008e70e8e8ca507603b6d5859d4edb83a5c55f",
+      "writing/submission_inversions_review/manuscript/table_appendix_domain_counts_compact.tex": "45e380042e1a0faa4edffcbc38e5607364cfdc53fc58957f18e9d7ed5db372dd",
+      "writing/submission_inversions_review/manuscript/table_appendix_selected_party_contributions.tex": "6334684115372a89ee832b3211ddf658d0ec5c983151f11705f3afdda2139455",
+      "writing/submission_inversions_review/manuscript/table_observed_inversion_decomposition.tex": "ba1046668f77b0424cff6ae11f7aaca974bff42128f8748562eb7ce162eca6ca"
+    },
+    "untracked_sources_used": []
+  },
+  "git_checks": {
+    "diff_check_exit_code": 0,
+    "cached_diff_check_exit_code": 0,
+    "intended_files": [
+      "processing/Processing/output/decomposition/audit/publication_artifact_manifest.csv",
+      "writing/appendix_revision/CHANGELOG.md",
+      "writing/appendix_revision/verification.json",
+      "writing/make_appendix_assets.py",
+      "writing/submission_inversions_review/manuscript.zip",
+      "writing/submission_inversions_review/manuscript/cabinet_membership_inversions.pdf",
+      "writing/submission_inversions_review/manuscript/figures.zip",
+      "writing/submission_inversions_review/manuscript/main_rw_again.pdf",
+      "writing/submission_inversions_review/manuscript/main_rw_again.tex",
+      "writing/submission_inversions_review/manuscript/manuscript.zip",
+      "writing/submission_inversions_review/manuscript/table_appendix_baseline_intervals_compact.tex",
+      "writing/submission_inversions_review/manuscript/table_appendix_cabinet_membership_compact.tex",
+      "writing/submission_inversions_review/manuscript/table_appendix_domain_counts_compact.tex",
+      "writing/submission_inversions_review/manuscript/table_appendix_selected_party_contributions.tex",
+      "writing/submission_inversions_review/manuscript/tables.zip"
+    ],
+    "unrelated_source_edit_preserved_unstaged": true,
+    "original_local_pdf_preserved_byte_for_byte": true,
+    "push_performed": false
+  },
+  "environment": {
+    "python": "3.12.1",
+    "matplotlib": "3.10.9",
+    "pandas": "3.0.2",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+    "biber": "biber version: 2.19"
+  }
+}
