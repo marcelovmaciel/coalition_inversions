@@ -1,59 +1,11 @@
-# Local environments and caches
+# Every supported command writes regenerable products here.
+/build/
+
+# Optional local environments and interpreter/editor caches.
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
+.auctex-auto/
 
-# Local tool state
-.agent-shell/
-.projectile
-
-# Temporary and generated artifacts
-tmp/
-reporting/_tmp/
-scraping/output/
-scrape_classification/output/
-processing/Processing/output/
-processing/Processing/exploratory/out/
-
-# Large local datasets
-/data/
-/votacao_candidato_munzona_2024/
-processing/Processing/data/*
-!processing/Processing/data/party_aliases.csv
-
-# Logs
-*.log
-
-# R session history
-.Rhistory
-
-# Out-of-scope local notes, reports, and reference materials
-/Friedman_umd_0117E_24463.pdf
-/abstract_versions.org
-/algumas_infos_institucionais.org*
-/diagnostico_checks_2014_2018_2022.md
-/marginalia.org
-/notas_desenvolvimento.org*
-/todo.org*
-/codex_instructions/
-/notes/
-/pdfs/
-/processing/national_party_votes_2018.md
-/r_scripts/readmes/
-/readmes/
-/reporting/
-/reports/
-/scraping/links_wikipedia.md
-/test_scripts/
-
-# Superseded local R&R manuscript sources
-/writing/submission_inversions_review/manuscript/main.tex
-/writing/submission_inversions_review/manuscript/refs.bib
-
-# Reproducible cabinet-release consumer configuration and compact comparison inputs
-!processing/Processing/data/cabinet_release_pin.json
-!processing/Processing/data/cabinet_release_election_crosswalk.csv
-!processing/Processing/data/cabinet_v5_comparison_baseline/
-!processing/Processing/data/cabinet_v5_comparison_baseline/**
-# Local preservation snapshot; compact baselines are exposed above.
-/audit/cabinet_v5_before/
+# Frozen electoral/ideological inputs and the four-file cabinet snapshot
+# are deliberately not ignored.

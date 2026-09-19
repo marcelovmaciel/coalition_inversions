@@ -1,0 +1,109 @@
+DT_GERACAO,HH_GERACAO,ANO_ELEICAO,CD_TIPO_ELEICAO,NM_TIPO_ELEICAO,CD_ELEICAO,DS_ELEICAO,DT_ELEICAO,DT_POSSE,SG_UF,SG_UE,NM_UE,CD_CARGO,DS_CARGO,QT_VAGA
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AC,AC,ACRE,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AC,AC,ACRE,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AC,AC,ACRE,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AC,AC,ACRE,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AL,AL,ALAGOAS,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AL,AL,ALAGOAS,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AL,AL,ALAGOAS,6,Deputado Federal,9
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AL,AL,ALAGOAS,7,Deputado Estadual,27
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AM,AM,AMAZONAS,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AM,AM,AMAZONAS,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AM,AM,AMAZONAS,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AM,AM,AMAZONAS,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,AP,AP,AMAPÁ,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AP,AP,AMAPÁ,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AP,AP,AMAPÁ,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,AP,AP,AMAPÁ,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,BA,BA,BAHIA,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,BA,BA,BAHIA,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,BA,BA,BAHIA,6,Deputado Federal,39
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,BA,BA,BAHIA,7,Deputado Estadual,63
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,CE,CE,CEARÁ,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,CE,CE,CEARÁ,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,CE,CE,CEARÁ,6,Deputado Federal,22
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,CE,CE,CEARÁ,7,Deputado Estadual,46
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,DF,DF,DISTRITO FEDERAL,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,DF,DF,DISTRITO FEDERAL,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,DF,DF,DISTRITO FEDERAL,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,DF,DF,DISTRITO FEDERAL,8,Deputado Distrital,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,ES,ES,ESPÍRITO SANTO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,ES,ES,ESPÍRITO SANTO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,ES,ES,ESPÍRITO SANTO,6,Deputado Federal,10
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,ES,ES,ESPÍRITO SANTO,7,Deputado Estadual,30
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,GO,GO,GOIÁS,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,GO,GO,GOIÁS,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,GO,GO,GOIÁS,6,Deputado Federal,17
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,GO,GO,GOIÁS,7,Deputado Estadual,41
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,MA,MA,MARANHÃO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MA,MA,MARANHÃO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MA,MA,MARANHÃO,6,Deputado Federal,18
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,MA,MA,MARANHÃO,7,Deputado Estadual,42
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,MG,MG,MINAS GERAIS,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MG,MG,MINAS GERAIS,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MG,MG,MINAS GERAIS,6,Deputado Federal,53
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MG,MG,MINAS GERAIS,7,Deputado Estadual,77
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,MS,MS,MATO GROSSO DO SUL,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MS,MS,MATO GROSSO DO SUL,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MS,MS,MATO GROSSO DO SUL,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MS,MS,MATO GROSSO DO SUL,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,MT,MT,MATO GROSSO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MT,MT,MATO GROSSO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MT,MT,MATO GROSSO,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,MT,MT,MATO GROSSO,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PA,PA,PARÁ,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PA,PA,PARÁ,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PA,PA,PARÁ,6,Deputado Federal,17
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PA,PA,PARÁ,7,Deputado Estadual,41
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PB,PB,PARAÍBA,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PB,PB,PARAÍBA,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PB,PB,PARAÍBA,6,Deputado Federal,12
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PB,PB,PARAÍBA,7,Deputado Estadual,36
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PE,PE,PERNAMBUCO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PE,PE,PERNAMBUCO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PE,PE,PERNAMBUCO,6,Deputado Federal,25
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PE,PE,PERNAMBUCO,7,Deputado Estadual,49
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PI,PI,PIAUÍ,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PI,PI,PIAUÍ,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PI,PI,PIAUÍ,6,Deputado Federal,10
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PI,PI,PIAUÍ,7,Deputado Estadual,30
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,PR,PR,PARANÁ,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PR,PR,PARANÁ,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PR,PR,PARANÁ,6,Deputado Federal,30
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,PR,PR,PARANÁ,7,Deputado Estadual,54
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RJ,RJ,RIO DE JANEIRO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RJ,RJ,RIO DE JANEIRO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RJ,RJ,RIO DE JANEIRO,6,Deputado Federal,46
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RJ,RJ,RIO DE JANEIRO,7,Deputado Estadual,70
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RN,RN,RIO GRANDE DO NORTE,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RN,RN,RIO GRANDE DO NORTE,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RN,RN,RIO GRANDE DO NORTE,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RN,RN,RIO GRANDE DO NORTE,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RO,RO,RONDÔNIA,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RO,RO,RONDÔNIA,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RO,RO,RONDÔNIA,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RO,RO,RONDÔNIA,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RR,RR,RORAIMA,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RR,RR,RORAIMA,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RR,RR,RORAIMA,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RR,RR,RORAIMA,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,RS,RS,RIO GRANDE DO SUL,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RS,RS,RIO GRANDE DO SUL,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,RS,RS,RIO GRANDE DO SUL,6,Deputado Federal,31
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,31/01/2023,RS,RS,RIO GRANDE DO SUL,7,Deputado Estadual,55
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,SC,SC,SANTA CATARINA,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SC,SC,SANTA CATARINA,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SC,SC,SANTA CATARINA,6,Deputado Federal,16
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SC,SC,SANTA CATARINA,7,Deputado Estadual,40
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,SE,SE,SERGIPE,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SE,SE,SERGIPE,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SE,SE,SERGIPE,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SE,SE,SERGIPE,7,Deputado Estadual,24
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,SP,SP,SÃO PAULO,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SP,SP,SÃO PAULO,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,SP,SP,SÃO PAULO,6,Deputado Federal,70
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,15/03/2023,SP,SP,SÃO PAULO,7,Deputado Estadual,94
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/01/2023,TO,TO,TOCANTINS,3,Governador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,TO,TO,TOCANTINS,5,Senador,1
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,TO,TO,TOCANTINS,6,Deputado Federal,8
+02/12/2025,03:30:21,2022,2,Eleição Ordinária,546,Eleições Gerais Estaduais 2022,02/10/2022,01/02/2023,TO,TO,TOCANTINS,7,Deputado Estadual,24

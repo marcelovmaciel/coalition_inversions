@@ -1,7 +1,0 @@
-election,ideological_universe,k,minimal_seat_majority_coalitions,minimal_inversions,strongest_inversion_coalition,strongest_inversion_vote_share,strongest_inversion_vote_share_pct,strongest_inversion_seats,strongest_inversion_r_C,strongest_inversion_vote_deficit_pp,diagnostic_admissible_coalitions,diagnostic_exact_strength_tie_count,diagnostic_exact_strength_tied_coalitions,non_inverted_minimal_majorities,inverted_members_median,inverted_members_min,inverted_members_max,non_inverted_members_median,non_inverted_members_min,non_inverted_members_max,ideological_party_count
-2014,all_parties,0,8,4,PTB--PR,0.47591256254894826,47.59125625489482,257,12.856855412389535,2.408743745105177,528,0,,4,15.0,12,16,12.0,12,14,32
-2014,all_parties,1,88,43,"PTB--PR, omitting PPL",0.4744616510767348,47.44616510767348,257,13.601172997635047,2.5538348923265204,5488,0,,45,14.0,11,19,14.0,11,19,32
-2018,all_parties,0,8,0,None,,,,,,630,0,,8,,,,16.5,15,20,35
-2018,all_parties,1,118,24,"PCdoB--PODE, omitting PSDB",0.47823504167693237,47.82350416769324,257,11.665423619733701,2.176495832306763,7175,0,,94,17.0,14,19,17.0,14,21,35
-2022,all_parties,0,4,2,PP--PL,0.4534989317772354,45.34989317772354,258,24.355047998278252,4.650106822276463,528,0,,2,11.5,8,15,20.0,19,21,32
-2022,all_parties,1,53,17,"PP--PL, omitting DC",0.4526056142903306,45.26056142903306,258,24.81331986906042,4.739438570966939,5488,0,,36,14.0,7,16,19.0,14,21,32

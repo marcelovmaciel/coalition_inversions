@@ -19,6 +19,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_MANUSCRIPT = Path("writing/submission_inversions_review/manuscript/main_rw_again.tex")
+DEFAULT_RESULTS = Path("build/results/manuscript_results.csv")
 MARKER = re.compile(r"^\s*% PROVENANCE-(BEGIN|END) ([a-z0-9]+(?:-[a-z0-9]+)*)\s*$")
 EMPIRICAL_MACRO = re.compile(r"\\(?:Ideology|Cabinet|Party|District|Empirical|Acct)[A-Za-z]+\b")
 
@@ -166,21 +167,12 @@ def same_value(recorded: str, current: str) -> bool:
         return False
 
 
-def validate_provenance(manuscript: Path, repository_root: Path, *, require_blocks: bool = True
-                        ) -> tuple[list[dict[str, object]], list[str]]:
-    text = manuscript.read_text(encoding="utf-8")
-    blocks = parse_blocks(text)
-    if require_blocks and not blocks:
-        raise ProvenanceError(f"No provenance blocks in {manuscript}")
-    stale = sorted(set(EMPIRICAL_MACRO.findall(uncomment(text))))
-    if stale or re.search(r"\\input\{(?:manuscript_values|accounting_numeric_macros)\.tex\}", uncomment(text)):
-        raise ProvenanceError(f"Retired empirical prose macro layer in {manuscript}: {stale}")
+def source_records(blocks: list[Block], repository_root: Path) -> list[dict[str, object]]:
+    """Extract current scientific values; annotated expected values are never inputs."""
     root = repository_root.resolve()
     cache: dict[str, tuple[list[str], list[dict[str, str]]]] = {}
     records: list[dict[str, object]] = []
-    warnings: list[str] = []
     for block in blocks:
-        paragraph = " ".join(block.paragraph.split())
         for reference in block.rows:
             path = (root / reference.source).resolve()
             if Path(reference.source).is_absolute() or not path.is_relative_to(root) or path.suffix != ".csv":
@@ -207,10 +199,68 @@ def validate_provenance(manuscript: Path, repository_root: Path, *, require_bloc
             if len(matches) != 1:
                 raise ProvenanceError(f"{block.identifier}: key [{key}] resolves to {len(matches)} rows in {reference.source}; expected exactly one")
             current_row, observation = matches[0]
+            for name in reference.fields:
+                records.append(dict(block=block.identifier, source=reference.source, key=key,
+                                    current_row=current_row, field=name, value=observation[name]))
+    return records
+
+
+def result_key(record: dict) -> tuple:
+    return (record["block"], record["source"], tuple(sorted(parse_key(record["key"]).items())), record["field"])
+
+
+def compact_records(path: Path) -> list[dict[str, str]]:
+    """Load compact results without opening any exhaustive scientific output."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        required = {"record_type", "block", "source", "key", "field", "value", "current_row"}
+        if set(reader.fieldnames or []) != required:
+            raise ProvenanceError(f"Invalid manuscript-results schema in {path}")
+        records = list(reader)
+    if any(None in row or None in row.values() for row in records):
+        raise ProvenanceError(f"Malformed manuscript-results row in {path}")
+    if any(row["record_type"] not in ("provenance", "summary") for row in records):
+        raise ProvenanceError(f"Unknown manuscript-results record type in {path}")
+    return [row for row in records if row["record_type"] == "provenance"]
+
+
+def validate_provenance(manuscript: Path, repository_root: Path, *, require_blocks: bool = True,
+                        results: Path | None = None
+                        ) -> tuple[list[dict[str, object]], list[str]]:
+    text = manuscript.read_text(encoding="utf-8")
+    blocks = parse_blocks(text)
+    if require_blocks and not blocks:
+        raise ProvenanceError(f"No provenance blocks in {manuscript}")
+    stale = sorted(set(EMPIRICAL_MACRO.findall(uncomment(text))))
+    if stale or re.search(r"\\input\{(?:manuscript_values|accounting_numeric_macros)\.tex\}", uncomment(text)):
+        raise ProvenanceError(f"Retired empirical prose macro layer in {manuscript}: {stale}")
+    observations = compact_records(results) if results is not None else source_records(blocks, repository_root)
+    indexed = {}
+    for record in observations:
+        token = result_key(record)
+        if results is not None and token in indexed:
+            raise ProvenanceError(f"Duplicate manuscript-result key: {token}")
+        indexed[token] = record
+    expected = {(block.identifier, ref.source, tuple(sorted(ref.key.items())), name)
+                for block in blocks for ref in block.rows for name in ref.fields}
+    if set(indexed) != expected:
+        raise ProvenanceError("Manuscript-results selectors differ from the current provenance blocks; regenerate results")
+    records: list[dict[str, object]] = []
+    warnings: list[str] = []
+    for block in blocks:
+        paragraph = " ".join(block.paragraph.split())
+        for reference in block.rows:
+            key = "; ".join(f"{k}={v}" for k, v in reference.key.items())
+            selected = {name: indexed[block.identifier, reference.source, tuple(sorted(reference.key.items())), name]
+                        for name in reference.fields}
+            row_numbers = {int(row["current_row"]) for row in selected.values()}
+            if len(row_numbers) != 1 or min(row_numbers) < 1:
+                raise ProvenanceError(f"{block.identifier}: inconsistent manuscript-result source rows")
+            current_row = row_numbers.pop()
             if current_row != reference.row_at_generation:
                 warnings.append(f"{block.identifier}: {reference.source} [{key}] is now data row {current_row}; row_at_generation={reference.row_at_generation} is stale")
             for name, recorded in reference.fields.items():
-                actual = observation[name]
+                actual = selected[name]["value"]
                 if not same_value(recorded, actual):
                     raise ProvenanceError(f"{block.identifier}: {reference.source} [{key}], current data row {current_row}, {name}: recorded {recorded!r}, CSV {actual!r}")
                 display = reference.display.get(name, "")
@@ -226,9 +276,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPOSITORY_ROOT)
     parser.add_argument("--main-tex", type=Path)
+    parser.add_argument("--results", type=Path, help="Compact scientific results (default: build/results/manuscript_results.csv)")
+    parser.add_argument("--direct-sources", action="store_true", help="Compare directly with the selected scientific source rows")
     args = parser.parse_args()
     try:
-        records, warnings = validate_provenance(args.main_tex or args.repo_root / DEFAULT_MANUSCRIPT, args.repo_root)
+        records, warnings = validate_provenance(args.main_tex or args.repo_root / DEFAULT_MANUSCRIPT, args.repo_root,
+            results=None if args.direct_sources else args.results or args.repo_root / DEFAULT_RESULTS)
     except (ProvenanceError, OSError, UnicodeError, csv.Error) as exc:
         print(f"Prose provenance FAILED: {exc}", file=sys.stderr)
         return 1

@@ -176,7 +176,6 @@ function audit_component_dominance(sources)
 end
 
 function build_summaries(sources; specs = SUMMARY_SPECS)
-    any(spec -> spec.summary == DOMINANCE_SUMMARY, specs) && audit_component_dominance(sources)
     records = NamedTuple[]
     for spec in specs
         rows = filter(sources[spec.source]) do row
@@ -189,10 +188,10 @@ function build_summaries(sources; specs = SUMMARY_SPECS)
         end
         value = aggregate_values(collect(skipmissing([summary_metric(row, spec.metric) for row in eachrow(rows)])), spec.aggregation)
         location, file = SOURCE_FILES[spec.source]
-        prefix = location == :paper ? "paper" : "decomposition"
+        prefix = location == :paper ? "domains" : "accounting"
         push!(records, (; summary = spec.summary, metric = string(spec.metric),
             aggregation = string(spec.aggregation), value = string(value),
-            source_file = "processing/Processing/output/$prefix/$file",
+            source_file = "build/results/$prefix/$file",
             source_filter = isempty(spec.filters) ? "all rows" : join(["$k=$v" for (k, v) in pairs(spec.filters)], "; "),
             source_row_count = nrow(rows),
             selection = string(get(spec, :selection, :all_matching_rows)),
@@ -207,7 +206,9 @@ function build_summaries(sources; specs = SUMMARY_SPECS)
 end
 
 function write_prose_summaries(output_root; paper_root)
-    data = build_summaries(load_summary_sources(paper_root, output_root))
+    sources = load_summary_sources(paper_root, output_root)
+    audit_component_dominance(sources)
+    data = build_summaries(sources)
     relative = "tables/prose_analysis_summaries.csv"
     path = joinpath(output_root, relative)
     mkpath(dirname(path))
@@ -217,30 +218,4 @@ function write_prose_summaries(output_root; paper_root)
         rows = nrow(data), columns = ncol(data), sha256 = bytes2hex(SHA.sha256(read(path))))]
 end
 
-"""Refresh only the summary CSV and its manifest entries, using existing pipeline outputs."""
-function refresh_prose_summaries(output_root; paper_root)
-    records = write_prose_summaries(output_root; paper_root)
-    for root in (output_root, paper_root)
-        manifest_path = joinpath(root, "artifact_manifest.csv")
-        manifest = CSV.read(manifest_path, DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-        for record in records
-            indices = findall(==(record.path), manifest.path)
-            length(indices) == 1 || error("Expected one existing summary manifest entry in $manifest_path")
-            for column in propertynames(manifest)
-                manifest[only(indices), column] = getproperty(record, column)
-            end
-            root == paper_root && cp(joinpath(output_root, record.path), joinpath(root, record.path); force = true)
-        end
-        CSV.write(manifest_path, manifest)
-    end
-    records
-end
-
-end
-
-if abspath(PROGRAM_FILE) == @__FILE__
-    ARGS == ["--refresh"] || error("Usage: julia --project=processing/Processing ProseSummaries.jl --refresh")
-    root = normpath(joinpath(@__DIR__, "..", "output"))
-    records = ProseSummaries.refresh_prose_summaries(joinpath(root, "decomposition"); paper_root = joinpath(root, "paper"))
-    println("Refreshed summary CSV and manifest entries only: ", only(records))
 end

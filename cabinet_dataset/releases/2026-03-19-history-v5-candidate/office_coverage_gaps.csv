@@ -1,5 +1,0 @@
-gap_id,office_id,administration_id,start_inclusive,end_exclusive,state,evidence_ids,rationale
-gap-d7f698a7616a,bolsonaro-comunicacoes,bolsonaro,2020-06-10,2020-06-17,VACANT_PENDING_FIRST_MINISTER,C050,C050: legally created ministerial office awaiting first actual ministerial possession; administrative support does not appoint a minister.
-gap-0df65eff6fe6,dilma_2-relacoes-institucionais,dilma_2,2015-04-07,2015-10-05,VACANT_FUNCTIONS_REASSIGNED,C023,C023: no separately appointed SRI minister; functions assigned to vice presidency. Office legally abolished October 5.
-gap-6aabec277edd,dilma_2-gabinete-pessoal,dilma_2,2016-03-16,2016-03-17,VACANT_PENDING_FIRST_MINISTER,C050,C050: legally created ministerial office awaiting first actual ministerial possession; administrative support does not appoint a minister.
-gap-2fa6a3c49c36,temer-cultura,temer,2016-05-23,2016-05-24,VACANT_PENDING_FIRST_MINISTER,C050,C050: legally created ministerial office awaiting first actual ministerial possession; administrative support does not appoint a minister.

@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from scientific_results import CoalitionResults
+
 YEARS = (2014, 2018, 2022)
 ATOL = 1e-10
 
@@ -134,7 +136,7 @@ def _load_accounting(decomposition_root, audit):
     return result
 
 
-def _coalition_values(election, names, audit):
+def _independent_coalition_check(election, names, audit):
     audit.require(set(names) <= set(election["parties"]), "coalition in party universe")
     V, S = election["V"], election["S"]
     votes = seats = 0
@@ -165,6 +167,16 @@ def _coalition_values(election, names, audit):
                 A_over_q=normalized_a, B_over_q=normalized_b, A_pct_quota=100 * normalized_a, B_pct_quota=100 * normalized_b,
                 inversion=seats >= threshold and 2 * votes < V,
                 A_member=a, B_member=b, A_district=a_district, B_district=b_district)
+
+
+def _coalition_values(results, year, names):
+    values = results.exact(year, names)
+    for key in ("V", "S", "seat_majority_threshold", "seat_share"):
+        values.pop(key)
+    # These retained figure columns name two proven equivalent aggregations.
+    values.update(A_member=values["A_C"], B_member=values["B_C"],
+                  A_district=values["A_C"], B_district=values["B_C"])
+    return values
 
 
 def _universe_path(artifact_root, relative, universe):
@@ -279,22 +291,25 @@ def _validate_float_identities(frame, audit, scope):
 
 def build_cross_domain_components(artifact_root: Path, domains=("cabinet", "k=0"), *,
                                   decomposition_root: Path | None = None,
-                                  universe="seat_winning") -> pd.DataFrame:
+                                  universe="seat_winning", validate_domain=True) -> pd.DataFrame:
     """Return coalition-observation components, with audit metadata in ``attrs``.
 
     ``artifact_root`` is the production paper-output directory. Exact accounting
-    defaults to its sibling ``decomposition`` directory, as in the main runner.
+    defaults to its sibling ``accounting`` directory. The normal export selects
+    canonical compact registries; deep tests additionally reconstruct minimality.
     ``domains`` may also include ``k=1`` for the existing diagnostic report.
     Counts are assertions against audited inputs, never substitutes for extraction.
     """
     artifact_root = Path(artifact_root)
     decomposition_root = (Path(decomposition_root) if decomposition_root is not None
-                          else artifact_root.parent / "decomposition")
+                          else artifact_root.parent / "accounting")
     domains = tuple(domains)
     audit = _Audit()
     audit.require(bool(domains) and len(set(domains)) == len(domains)
                   and set(domains) <= {"cabinet", "k=0", "k=1"}, "valid requested domains")
     data = _load_accounting(decomposition_root, audit)
+    results = CoalitionResults(decomposition_root)
+    audit.inputs.add(str(results.path.resolve()))
     rows, chronological_periods, registry_rows = [], 0, 0
     unidentified_intervals = []
     bounded_date_periods = 0
@@ -318,7 +333,7 @@ def build_cross_domain_components(artifact_root: Path, domains=("cabinet", "k=0"
         for row in sorted(source, key=lambda r: (int(r["election_year"]), r["period_start"])):
             year = int(row["election_year"])
             names = tuple(sorted(audit.parties(row["parties"])))
-            values = _coalition_values(data[year], names, audit)
+            values = _coalition_values(results, year, names)
             audit.exact(values["inversion"], audit.truth(row["coalition_inversion"]), "cabinet inversion flag")
             audit.exact(data[year]["V"], int(row["national_vote_total"]), "cabinet vote denominator")
             for actual, column in (("votes", "votes"), ("seats", "seats"), ("q_C", "quota"),
@@ -337,11 +352,18 @@ def build_cross_domain_components(artifact_root: Path, domains=("cabinet", "k=0"
                              is_strongest_inversion=False, **values))
     requested_k = {int(domain[-1]) for domain in domains if domain.startswith("k=")}
     if requested_k:
-        minimals, summaries, registry_rows = _audit_minimal_registry(data, artifact_root, requested_k, audit, universe)
+        if validate_domain:
+            minimals, summaries, registry_rows = _audit_minimal_registry(data, artifact_root, requested_k, audit, universe)
+        else:
+            minimals = [row for row in audit.read(_universe_path(artifact_root, "raw/ideology_k_gap_minimal_majorities.csv", universe))
+                        if int(row["k"]) in requested_k]
+            summaries = {(int(row["election"]), int(row["k"])): row for row in
+                         audit.read(_universe_path(artifact_root, "tables/ideology_k_gap_summary.csv", universe))
+                         if int(row["k"]) in requested_k}
         for row in minimals:
             year, k = int(row["election"]), int(row["k"])
             names = audit.parties(row["parties"])
-            values = _coalition_values(data[year], names, audit)
+            values = _coalition_values(results, year, names)
             for column in ("votes", "seats", "q_C", "d_C", "R_C", "vote_share"):
                 audit.close(values[column], row[column], "minimal-winning registry " + column, "minimal_regression")
             audit.exact(values["inversion"], audit.truth(row["inversion"]), "plotted ideological inversion")
@@ -406,9 +428,11 @@ def export_ideological_accounting(artifact_root: Path, decomposition_root: Path 
     Complete member vectors are written separately for compact replication.
     """
     artifact_root = Path(artifact_root)
-    decomposition_root = Path(decomposition_root) if decomposition_root else artifact_root.parent / "decomposition"
+    decomposition_root = Path(decomposition_root) if decomposition_root else artifact_root.parent / "accounting"
     audit = _Audit()
     data = _load_accounting(decomposition_root, audit)
+    results = CoalitionResults(decomposition_root)
+    audit.inputs.add(str(results.path.resolve()))
     coalition_path = artifact_root / "raw/ideology_k_gap_accounting_both_universes.csv"
     party_path = artifact_root / "raw/ideology_k_gap_party_contributions_both_universes.csv.gz"
     coalition_rows = []
@@ -423,7 +447,6 @@ def export_ideological_accounting(artifact_root: Path, decomposition_root: Path 
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         for universe in ("seat_winning", "all_parties"):
-            _audit_minimal_registry(data, artifact_root, {0, 1}, audit, universe)
             source = audit.read(_universe_path(artifact_root, "raw/ideology_k_gap_coalitions.csv", universe))
             for source_row in source:
                 year = int(source_row["election"])
@@ -431,7 +454,8 @@ def export_ideological_accounting(artifact_root: Path, decomposition_root: Path 
                 election = data[year]
                 key = year, names
                 if key not in cache:
-                    cache[key] = _coalition_values(election, names, audit)
+                    canonical = _coalition_values(results, year, names)
+                    cache[key] = canonical
                 values = cache[key]
                 audit.exact(sum(election["parties"][p]["d_i"] for p in names), values["d_C"], "party differential closure")
                 row = dict(source_row)
@@ -457,10 +481,15 @@ def export_ideological_accounting(artifact_root: Path, decomposition_root: Path 
     # same complete export and can be retained as an appendix replication asset.
     minimals = frame.loc[frame.minimal_seat_majority.astype(str).str.lower().eq("true")]
     minimals.to_csv(artifact_root / "raw/ideology_k_gap_minimal_accounting_both_universes.csv", index=False, float_format="%.17g")
+    component_frames = []
     for universe in ("seat_winning", "all_parties"):
         components = build_cross_domain_components(artifact_root, domains=("cabinet", "k=0", "k=1"),
-                                                  decomposition_root=decomposition_root, universe=universe)
-        components.to_csv(artifact_root / f"figure_data/cross_domain_components_{universe}.csv", index=False, float_format="%.17g")
+                                                  decomposition_root=decomposition_root, universe=universe, validate_domain=False)
+        component_frames.append(components)
+    cabinet = [part.loc[part.domain.eq("cabinet")].reset_index(drop=True) for part in component_frames]
+    pd.testing.assert_frame_equal(cabinet[0], cabinet[1])
+    combined = pd.concat([component_frames[0], component_frames[1].loc[~component_frames[1].domain.eq("cabinet")]], ignore_index=True)
+    combined.to_csv(artifact_root / "figure_data/cross_domain_components.csv", index=False, float_format="%.17g")
     report = dict(checks=dict(audit.checks), residuals=dict(audit.residuals), coalition_rows=len(frame),
                   member_rows=member_rows, member_columns=len(fields), universes=["seat_winning", "all_parties"],
                   national_votes={str(y): data[y]["V"] for y in YEARS},
@@ -471,10 +500,43 @@ def export_ideological_accounting(artifact_root: Path, decomposition_root: Path 
     return frame
 
 
+def validate_full_accounting(artifact_root: Path, decomposition_root: Path | None = None):
+    """Independently recheck the complete domain without overwriting scientific outputs."""
+    decomposition_root = decomposition_root or artifact_root.parent / "accounting"
+    audit = _Audit()
+    data = _load_accounting(decomposition_root, audit)
+    results = CoalitionResults(decomposition_root)
+    seen = set()
+    row_count = 0
+    for universe in ("seat_winning", "all_parties"):
+        _audit_minimal_registry(data, artifact_root, {0, 1}, audit, universe)
+        for row in audit.read(_universe_path(artifact_root, "raw/ideology_k_gap_coalitions.csv", universe)):
+            year = int(row["election"])
+            names = audit.parties(row["parties"])
+            row_count += 1
+            if (year, names) in seen:
+                continue
+            seen.add((year, names))
+            election = data[year]
+            canonical = _coalition_values(results, year, names)
+            independent = _independent_coalition_check(election, names, audit)
+            for field, value in independent.items():
+                if isinstance(value, float) and math.isnan(value):
+                    audit.require(math.isnan(canonical[field]), "undefined canonical ratio")
+                else:
+                    audit.exact(canonical[field], value, "canonical/independent " + field)
+    return dict(coalition_rows=row_count, distinct_sets=len(seen), checks=dict(audit.checks),
+                max_absolute_residuals=dict(audit.residuals))
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("artifact_root", type=Path)
     parser.add_argument("--decomposition-root", type=Path)
     args = parser.parse_args()
+    import sys
+    sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
+    from cabinet_contract import require_current_outputs
+    require_current_outputs()
     export_ideological_accounting(args.artifact_root, args.decomposition_root)

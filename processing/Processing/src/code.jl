@@ -5,10 +5,6 @@
 const RAW_ROOT = Ref("../data/raw/electionsBR")
 const COALITION_PATH = Ref(CabinetRelease.default_pin_path())
 
-_cabinet_to_election_crosswalk_path() = abspath(
-    joinpath(@__DIR__, "..", "data", "cabinet_to_election_party_crosswalk.csv"),
-)
-
 """
     set_root!(path::AbstractString)
 
@@ -174,249 +170,9 @@ function detect_vote_cols(df::DataFrame;
     error("Could not identify party vote components for party_mun_zone.")
 end
 
-# =============================================================================
-# Simple validations
-# =============================================================================
-
-function expected_total_seats_for_cargo(cargo::AbstractString)
-    cargo_up = uppercase(strip(cargo))
-    return cargo_up == "DEPUTADO FEDERAL" ? 513 : nothing
-end
-
-# =============================================================================
-# party_mun_zone: votos por partido
-# =============================================================================
-
-"""
-    pmz_df(year; cargo="DEPUTADO FEDERAL")
-
-Carrega `party_mun_zone.csv` para o ano dado, normaliza UF/cargo/partido,
-filtra pelo cargo e retorna o DataFrame resultante.
-
-NÃO faz suposição sobre quais colunas de votos existem — isso é tratado
-em `pmz_party_votes`.
-"""
-function pmz_df(year::Integer;
-    cargo::AbstractString = "DEPUTADO FEDERAL",
-)
-    path = pmz_path(year)
-    isfile(path) || error("pmz_df: arquivo não encontrado para o ano $year em $path")
-
-    # Para não brigar com mudanças de schema, lemos tudo e filtramos colunas
-    pmz = CSV.read(path, DataFrame)
-
-    upper_strip!(pmz, :DS_CARGO)
-    stringify!(pmz, :SG_UF)
-    stringify!(pmz, :SG_PARTIDO)
-    normalize_party!(pmz; year = Int(year))
-
-    cargo_up = uppercase(strip(cargo))
-    filter!(r -> r.DS_CARGO == cargo_up, pmz)
-
-    return pmz
-end
-
-
-
-function pmz_party_votes(year::Integer;
-    cargo::AbstractString = "DEPUTADO FEDERAL",
-    nom_col       = nothing,
-    leg_col       = nothing,
-    total_col     = nothing,
-)
-    P = pmz_df(year; cargo=cargo)
-
-    nom_c, leg_c, total_c, scheme = detect_vote_cols(P;
-                                                     nom_col = nom_col,
-                                                     leg_col = leg_col,
-                                                     total_col = total_col)
-
-    if scheme == :total
-        total_c === nothing && error("pmz_party_votes: could not detect vote columns.")
-        v = to_int.(P[!, total_c])
-    else
-        v_nom = nom_c === nothing ? zeros(Int, nrow(P)) : to_int.(P[!, nom_c])
-        v_leg = leg_c === nothing ? zeros(Int, nrow(P)) : to_int.(P[!, leg_c])
-        v = v_nom .+ v_leg
-    end
-
-
-    tmp = DataFrame(
-        SG_UF      = P.SG_UF,
-        DS_CARGO   = P.DS_CARGO,
-        SG_PARTIDO = P.SG_PARTIDO,
-        votes      = v,
-    )
-
-    g  = groupby(tmp, [:SG_UF, :DS_CARGO, :SG_PARTIDO])
-    pv = combine(g, :votes => sum => :votes)
-
-    return pv
-end
-
-
-function national_party_valid_votes(year::Integer;
-    cargo::AbstractString = "DEPUTADO FEDERAL",
-    nom_col       = nothing,
-    leg_col       = nothing,
-    total_col     = nothing,
-)
-    pv = pmz_party_votes(year;
-                         cargo   = cargo,
-                         nom_col = nom_col,
-                         leg_col = leg_col,
-                         total_col = total_col)
-
-    g   = groupby(pv, :SG_PARTIDO)
-    nat = combine(g, :votes => sum => :valid_total)
-    sort!(nat, :valid_total, rev = true)
-    return nat
-end
-
-function national_invalid_votes(year::Integer;
-    cargo::AbstractString = "DEPUTADO FEDERAL",
-    nom_invalid_cols = [
-        "QT_VOTOS_NOMINAIS_ANUL_SUBJUD",
-        "QT_VOTOS_NOMINAIS_ANULADOS",
-    ],
-    leg_invalid_cols = [
-        "QT_VOTOS_LEGENDA_ANUL_SUBJUD",
-        "QT_VOTOS_LEGENDA_ANULADOS",
-    ],
-)
-    P = pmz_df(year; cargo=cargo)
-
-    cols = Symbol[]
-    for c in nom_invalid_cols
-        col = first_in_df(P, [c])
-        col === nothing || push!(cols, Symbol(col))
-    end
-    for c in leg_invalid_cols
-        col = first_in_df(P, [c])
-        col === nothing || push!(cols, Symbol(col))
-    end
-    cols = unique(cols)
-    isempty(cols) && error("national_invalid_votes: could not detect invalid vote columns.")
-
-    total = 0
-    for c in cols
-        total += sum(to_int.(P[!, c]))
-    end
-    return total
-end
-
-# =============================================================================
-# candidate.csv: candidatos eleitos e cadeiras por partido
-# =============================================================================
-
-"""
-Conjunto de status que contam como "eleito".
-
-OBS: usamos *igualdade exata* após normalizar com uppercase+strip.
-'NAO ELEITO' NÃO aparece aqui, então não há risco do bug de substring
-("ELEITO" dentro de "NAO ELEITO").
-"""
-const WINNER_STATUSES = Set([
-    "ELEITO",
-    "ELEITO POR QP",
-    "ELEITO POR MEDIA",   # sem acento
-    "ELEITO POR MÉDIA",   # com acento
-])
-
-"""
-    candidate_df(year; cargo="DEPUTADO FEDERAL")
-
-Carrega `candidate.csv` para o ano dado, normaliza UF/cargo/partido,
-filtra pelo cargo e exige a coluna `DS_SIT_TOT_TURNO`.
-
-Se o arquivo ou a coluna não existirem, lança `error`.
-"""
-function candidate_df(year::Integer; cargo::AbstractString = "DEPUTADO FEDERAL")
-    path = candidate_path(year)
-    isfile(path) || error("candidate_df: arquivo não encontrado para o ano $year em $path")
-
-    needed = [
-        :ANO_ELEICAO,
-        :NR_TURNO,
-        :SG_UF,
-        :CD_CARGO,
-        :DS_CARGO,
-        :SG_PARTIDO,
-        :DS_SIT_TOT_TURNO,
-    ]
-
-    C = CSV.read(path, DataFrame; select=needed, normalizenames=true)
-
-
-
-    upper_strip!(C, :DS_CARGO)
-    stringify!(C, :SG_UF)
-    stringify!(C, :SG_PARTIDO)
-    normalize_party!(C; year = Int(year))
-
-    cargo_up = uppercase(strip(cargo))
-    filter!(r -> r.DS_CARGO == cargo_up, C)
-
-    return C
-end
-
-"""
-    cand_winners(year; cargo="DEPUTADO FEDERAL")
-
-Filtra `candidate.csv` para manter apenas candidatos eleitos, com base em
-`WINNER_STATUSES`. Sem heurística de substring.
-"""
-function cand_winners(year::Integer; cargo::AbstractString = "DEPUTADO FEDERAL")
-    C = candidate_df(year; cargo=cargo)
-
-    status_raw  = C[!, :DS_SIT_TOT_TURNO]
-    status_norm = uppercase.(strip.(String.(status_raw)))
-
-    C[!, :WINNER] = in.(status_norm, Ref(WINNER_STATUSES))
-    filter!(r -> r.WINNER, C)
-
-    return C
-end
-
-function cand_party_seats(year::Integer; cargo::AbstractString = "DEPUTADO FEDERAL")
-    C = candidate_df(year; cargo=cargo)
-
-    # normaliza o status de turno
-    status_raw  = C[!, :DS_SIT_TOT_TURNO]
-    status_norm = uppercase.(strip.(String.(status_raw)))
-
-    # marca vencedores (true/false)
-    C[!, :WINNER] = in.(status_norm, Ref(WINNER_STATUSES))
-
-    # agora contamos quantos vencedores por UF × cargo × partido
-    tmp = select(C, :SG_UF, :DS_CARGO, :SG_PARTIDO, :WINNER)
-    g   = groupby(tmp, [:SG_UF, :DS_CARGO, :SG_PARTIDO])
-
-    seats = combine(g, :WINNER => (w -> sum(Int.(w))) => :seats)
-    return seats
-end
-
-
-function get_agg_party_seats(year::Integer;
-                             cargo::AbstractString = "DEPUTADO FEDERAL",
-                             expected_total_seats::Union{Int,Nothing} = expected_total_seats_for_cargo(cargo))
-    bar = cand_party_seats(year; cargo=cargo)
-    sg1 = groupby(bar, :SG_PARTIDO)
-
-    national_party_seats = combine(
-        sg1,
-        :seats => sum => :total_seats,
-    )
-
-    total_seats = sum(national_party_seats.total_seats)
-    if expected_total_seats !== nothing
-        @assert total_seats == expected_total_seats "get_agg_party_seats: expected $expected_total_seats seats, got $total_seats."
-    end
-
-    sort!(national_party_seats, :total_seats, rev = true)
-    return national_party_seats
-end
-
+# Candidate rows in the frozen inputs are already candidate-unique. Count only
+# these accepted exact winner statuses; do not reinterpret retotalizations.
+const WINNER_STATUSES = Set(["ELEITO", "ELEITO POR QP", "ELEITO POR MEDIA", "ELEITO POR MÉDIA"])
 
 function party_summary(votes::DataFrame,
                        seats::DataFrame;
@@ -440,16 +196,17 @@ function party_summary(votes::DataFrame,
         @assert total_seats == expected_total_seats "party_summary: expected $expected_total_seats seats, got $total_seats."
     end
 
+    # Parties and coalitions are the same national accounting object. Keep the
+    # established Float64 CSV view while sharing its exact scientific producer.
+    quantities = [coalition_accounting_metrics(votes, seats;
+        national_vote_total = total_votes, total_seats = total_seats)
+        for (votes, seats) in zip(df[!, vote_col], df[!, seat_col])]
     df[!, :national_vote_total] = fill(total_votes, nrow(df))
-    df[!, :vote_share] = df[!, vote_col] ./ total_votes
-    df[!, :seat_share] = df[!, seat_col] ./ total_seats
-
-    df[!, :quota]     = df[!, :vote_share] .* total_seats
-    df[!, :seat_diff] = df[!, seat_col] .- df[!, :quota]
-    df[!, :representation_ratio] = Union{Missing,Float64}[
-        quota > 0 ? Float64(seat) / Float64(quota) : missing
-        for (seat, quota) in zip(df[!, seat_col], df.quota)
-    ]
+    df[!, :vote_share] = [q.vote_share for q in quantities]
+    df[!, :seat_share] = [q.seat_share for q in quantities]
+    df[!, :quota] = [q.quota for q in quantities]
+    df[!, :seat_diff] = [q.seat_diff for q in quantities]
+    df[!, :representation_ratio] = Union{Missing,Float64}[q.representation_ratio for q in quantities]
 
     return df
 end
@@ -466,6 +223,36 @@ function _majority_status(vote_majority::Bool, seat_majority::Bool)
     end
 end
 
+"""Proportional seat quota using integer votes and the full vote denominator."""
+proportional_quota(votes::Integer, total_votes::Integer, total_seats::Integer) =
+    (BigInt(total_seats) * BigInt(votes)) // BigInt(total_votes)
+
+"""Exact national accounting shared by parties and every coalition domain.
+
+Zero quota has an undefined representation ratio. A vote tie is never an
+inversion, even when the coalition attains the actual seat-majority threshold.
+"""
+function exact_accounting(votes::Integer, seats::Integer;
+    national_vote_total::Integer, total_seats::Integer = 513,
+    seat_majority_threshold::Integer = fld(total_seats, 2) + 1,
+)
+    national_vote_total > 0 || error("National vote total must be positive.")
+    total_seats > 0 || error("Chamber seat total must be positive.")
+    seat_majority_threshold > 0 || error("Seat-majority threshold must be positive.")
+    0 <= votes <= national_vote_total || error("Coalition votes are outside national totals.")
+    0 <= seats <= total_seats || error("Coalition seats are outside Chamber totals.")
+    q = proportional_quota(votes, national_vote_total, total_seats)
+    d = BigInt(seats) - q
+    r = BigInt(seat_majority_threshold) - q
+    R = iszero(q) ? missing : BigInt(seats) / q
+    vote_share = BigInt(votes) // BigInt(national_vote_total)
+    seat_share = BigInt(seats) // BigInt(total_seats)
+    vote_majority = 2 * BigInt(votes) > national_vote_total
+    seat_majority = seats >= seat_majority_threshold
+    inversion = seat_majority && 2 * BigInt(votes) < national_vote_total
+    return (; q, d, r, R, vote_share, seat_share, vote_majority, seat_majority, inversion)
+end
+
 """
     coalition_accounting_metrics(coalition_votes, coalition_seats;
                                  national_vote_total,
@@ -479,25 +266,21 @@ Chamber-majority threshold. A zero-vote coalition has an undefined
 `representation_ratio`, represented by `missing`.
 """
 function coalition_accounting_metrics(
-    coalition_votes::Real,
-    coalition_seats::Real;
-    national_vote_total::Real,
-    total_seats::Real = 513,
-    seat_majority_threshold::Integer = fld(Int(round(total_seats)), 2) + 1,
+    coalition_votes::Integer,
+    coalition_seats::Integer;
+    national_vote_total::Integer,
+    total_seats::Integer = 513,
+    seat_majority_threshold::Integer = fld(total_seats, 2) + 1,
 )
+    exact = exact_accounting(coalition_votes, coalition_seats;
+        national_vote_total, total_seats, seat_majority_threshold)
+    # Preserve the established Float64 serialization order. These display views
+    # do not classify coalitions or supply the exact decomposition arithmetic.
     votes = Float64(coalition_votes)
     seats = Float64(coalition_seats)
     national_votes = Float64(national_vote_total)
     chamber_seats = Float64(total_seats)
     majority_threshold = Int(seat_majority_threshold)
-
-    national_votes > 0 || error("coalition_accounting_metrics: national_vote_total must be positive.")
-    chamber_seats > 0 || error("coalition_accounting_metrics: total_seats must be positive.")
-    majority_threshold > 0 || error("coalition_accounting_metrics: seat_majority_threshold must be positive.")
-    votes >= 0 || error("coalition_accounting_metrics: coalition_votes must be nonnegative.")
-    seats >= 0 || error("coalition_accounting_metrics: coalition_seats must be nonnegative.")
-    votes <= national_votes || error("coalition_accounting_metrics: coalition votes exceed the national vote total.")
-    seats <= chamber_seats || error("coalition_accounting_metrics: coalition seats exceed total seats.")
 
     vote_share = votes / national_votes
     seat_share = seats / chamber_seats
@@ -505,8 +288,8 @@ function coalition_accounting_metrics(
     seat_diff = seats - quota
     required_diff = majority_threshold - quota
     representation_ratio = quota > 0 ? seats / quota : missing
-    vote_majority = vote_share > 0.5
-    seat_majority = seats >= majority_threshold
+    vote_majority = exact.vote_majority
+    seat_majority = exact.seat_majority
 
     return (
         national_vote_total = national_votes,
@@ -519,8 +302,23 @@ function coalition_accounting_metrics(
         vote_majority = Bool(vote_majority),
         seat_majority = Bool(seat_majority),
         majority_status = _majority_status(vote_majority, seat_majority),
-        coalition_inversion = Bool(seat_majority && !vote_majority),
+        coalition_inversion = exact.inversion,
     )
+end
+
+"""Sum a membership set without changing the national vote denominator."""
+function coalition_totals(df::DataFrame, parties;
+    party_col::Symbol = :SG_PARTIDO, vote_col::Symbol = :valid_total,
+    seat_col::Symbol = :total_seats,
+)
+    labels = String.(df[!, party_col])
+    allunique(labels) || error("Party totals must have one row per party.")
+    members = Set(String.(parties))
+    absent = setdiff(members, Set(labels))
+    isempty(absent) || error("Coalition party absent from election totals: $(join(sort(collect(absent)), ", "))")
+    mask = in.(labels, Ref(members))
+    return (votes = sum(df[mask, vote_col]), seats = sum(df[mask, seat_col]),
+        national_vote_total = sum(df[!, vote_col]), total_seats = sum(df[!, seat_col]))
 end
 
 function _require_columns(df::DataFrame, cols::Vector{Symbol}, df_name::AbstractString)
@@ -648,7 +446,7 @@ function ideological_k_gap_coalitions(
                 coalition_seats = sum(seats[member_indices])
                 accounting = coalition_accounting_metrics(coalition_votes, coalition_seats;
                     national_vote_total = total_votes, total_seats, seat_majority_threshold)
-                inversion = coalition_seats >= seat_majority_threshold && 2 * coalition_votes < total_votes
+                inversion = accounting.coalition_inversion
                 gap_count = right_index - left_index + 1 - length(member_indices)
                 omitted_party = omitted_index == 0 ? missing : parties[omitted_index]
                 coalition_label = omitted_index == 0 ?
@@ -714,7 +512,14 @@ function ideological_interval_coalitions(
     universe::Symbol = :seat_winning,
     tie_policy::Symbol = :error,
 )
-    result = ideological_k_gap_coalitions(summary_df, ideology_df; k = 0, universe, tie_policy)
+    return ideological_interval_view(ideological_k_gap_coalitions(
+        summary_df, ideology_df; k = 0, universe, tie_policy))
+end
+
+"""Presentation aliases for the already calculated exact-connected domain."""
+function ideological_interval_view(domain::DataFrame)
+    all(domain.k .== 0) || error("Interval view requires the k=0 domain.")
+    result = copy(domain)
     for (alias, source) in ((:start_index, :left_index), (:end_index, :right_index),
         (:start_party, :left_endpoint), (:end_party, :right_endpoint),
         (:n_parties, :party_count), (:quota, :q_C), (:seat_diff, :d_C),
@@ -729,11 +534,6 @@ function ideological_interval_coalitions(
     result[!, :complement_vote_share] = result.complement_votes ./ result.national_vote_total
     result[!, :complement_seats] = result.total_seats .- result.seats
     result[!, :complement_seat_share] = result.complement_seats ./ result.total_seats
-    first_majority_end = Dict{Int,Int}()
-    for row in eachrow(result)
-        row.seat_majority && get!(first_majority_end, row.start_index, row.end_index)
-    end
-    result[!, :old_sweep_equivalent] = [get(first_majority_end, row.start_index, 0) == row.end_index for row in eachrow(result)]
     return result
 end
 
@@ -886,429 +686,7 @@ end
 
 
 
-function coalition_summary_mask(df::DataFrame, mask_raw; label)
-    @assert length(mask_raw) == nrow(df) "coalition_summary_mask: mask length mismatch."
-
-    mask = Bool.(coalesce.(mask_raw, false))
-
-    # shares (já normalizados em party_summary)
-    V_total = sum(df.vote_share)
-    S_total = sum(df.seat_share)
-
-    # indexação booleana normal, não via view(mask)
-    V_base = sum(df.vote_share[mask])
-    S_base = sum(df.seat_share[mask])
-
-    V_out  = V_total - V_base
-    S_out  = S_total - S_base
-
-    seatdiff_base = sum(df.seat_diff[mask])
-
-
-    inversion = (V_base < V_out) && (S_base > S_out)
-
-
-    return (
-        coalition_col = label,
-        V_base_share  = V_base,
-        V_out_share   = V_out,
-        S_base_share  = S_base,
-        S_out_share   = S_out,
-        seatdiff_base = seatdiff_base,
-        inversion     = inversion,
-    )
-end
-
-function coalition_summary(df::DataFrame, col::Union{Symbol,AbstractString})
-    # pega a coluna booleana e trata missings como false
-    mask_raw = df[!, col]
-    return coalition_summary_mask(df, mask_raw; label=col)
-end
-
-
-
-"""
-    coalition_table(df, cols)
-
-Recebe um DataFrame `df` e um vetor de Symbols `cols` (colunas booleanas que definem coalizões).
-Retorna um DataFrame com um resumo por coalizão.
-"""
-function coalition_table(df::DataFrame, cols)
-    rows = CoalitionSummaries = Vector{NamedTuple}(undef, length(cols))
-    for (i, c) in enumerate(cols)
-        rows[i] = coalition_summary(df, c)
-    end
-    return DataFrame(rows)
-end
-
-"""
-    coalition_table_periods(df; year=nothing, years=nothing, path=get_coalition_path())
-
-Retorna um DataFrame com um resumo por periodo (ex.: "2018.1", "2018.2"),
-usando os partidos definidos em `partidos_por_periodo.json`.
-"""
-function coalition_table_periods(df::DataFrame;
-                                 year::Union{Int,Nothing} = nothing,
-                                 years::Union{AbstractVector{<:Integer},Nothing} = nothing,
-                                 path::AbstractString = get_coalition_path())
-    if year !== nothing && years !== nothing
-        error("coalition_table_periods: use apenas `year` ou `years`.")
-    end
-
-    if years !== nothing
-        tables = [coalition_table_periods(df; year=y, path=path) for y in years]
-        return isempty(tables) ? DataFrame() : vcat(tables...)
-    end
-
-    periods = coalitions_by_period(; path=path)
-    if year !== nothing
-        periods = coalition_periods_overlapping_year(periods, year; path=path)
-    end
-
-    period_keys = sort(collect(Base.keys(periods)); by=period_sort_key)
-    rows = Vector{NamedTuple}(undef, length(period_keys))
-    for (i, key) in enumerate(period_keys)
-        parties = periods[key]
-        mask = in.(df.SG_PARTIDO, Ref(Set(parties)))
-        rows[i] = coalition_summary_mask(df, mask; label=key)
-    end
-    return DataFrame(rows)
-end
-
-function parse_mandate_id(mandate_id::AbstractString)::NamedTuple
-    token = strip(String(mandate_id))
-    m = match(r"^(\d{4})-(\d{4})$", token)
-    m === nothing && error("mandate_id inválido: '$token'. Use YYYY-YYYY.")
-
-    start_year = parse(Int, m.captures[1])
-    end_year = parse(Int, m.captures[2])
-    end_year == start_year + 3 || error("mandate_id inválido: '$token'. Esperado intervalo de 4 anos.")
-
-    return (
-        mandate_id = token,
-        start_year = start_year,
-        end_year = end_year,
-        election_year = start_year - 1,
-    )
-end
-
-mandate_id_for_election_year(election_year::Integer)::String = begin
-    start_year = Int(election_year) + 1
-    string(start_year, "-", start_year + 3)
-end
-
-election_year_for_mandate_id(mandate_id::AbstractString)::Int = parse_mandate_id(mandate_id).election_year
-
+"""Read the published election-space party sets from the pinned cabinet input."""
 function coalitions_by_period_raw(; path::AbstractString = get_coalition_path())
     return CabinetRelease.identified_parties(path)
-end
-
-"""
-    load_cabinet_to_election_crosswalk(path = _cabinet_to_election_crosswalk_path()) -> DataFrame
-
-Carrega a tabela explícita que traduz partidos do objeto ministerial
-(verdade em ano de gabinete) para o espaço de identidade do ano eleitoral
-usado nos joins de inversão.
-
-Uma linha pode expandir para vários partidos eleitorais. Exemplo:
-`UNIÃO` em joins com a eleição de 2018 vira `DEM` + `PSL`.
-"""
-function load_cabinet_to_election_crosswalk(
-    path::AbstractString = _cabinet_to_election_crosswalk_path(),
-)::DataFrame
-    isfile(path) || error("Crosswalk gabinete->eleição não encontrado: $path")
-    df = CSV.read(path, DataFrame)
-
-    for col in (:election_year, :cabinet_party, :election_party)
-        hasproperty(df, col) || error("Crosswalk gabinete->eleição sem coluna obrigatória: $col")
-    end
-
-    if !hasproperty(df, :notes)
-        df[!, :notes] = fill("", nrow(df))
-    end
-    if !hasproperty(df, :mapping_type)
-        df[!, :mapping_type] = fill("", nrow(df))
-    end
-
-    df[!, :election_year] = Int.(df.election_year)
-    df[!, :cabinet_party] = strip.(String.(coalesce.(df.cabinet_party, "")))
-    df[!, :election_party] = strip.(String.(coalesce.(df.election_party, "")))
-    df[!, :notes] = String.(coalesce.(df.notes, ""))
-    df[!, :mapping_type] = strip.(String.(coalesce.(df.mapping_type, "")))
-    df[!, :cabinet_party_norm] = normalize_party.(df.cabinet_party)
-    df[!, :election_party] = [
-        canonical_party(row.election_party; year = row.election_year, strict = true)
-        for row in eachrow(df)
-    ]
-
-    filter!(row -> !isempty(row.cabinet_party_norm) && !isempty(row.election_party), df)
-    return df
-end
-
-"""
-    cabinet_parties_in_election_space(cabinet_parties; election_year, valid_election_parties, crosswalk_path)
-
-Traduz partidos do gabinete para o espaço de identidade do ano eleitoral
-antes do join com votos/cadeiras.
-
-Regra explícita:
-- toda identidade deve ter linha explícita para `cabinet_party × election_year`;
-- renomes e ancestralidade aditiva de fusões são documentados no crosswalk;
-- os destinos eleitorais são unidos antes da soma, sem duplicação;
-- identidade ausente ou destino inexistente falha sem fallback por rótulo.
-"""
-function cabinet_parties_in_election_space(
-    cabinet_parties::AbstractVector{<:AbstractString};
-    election_year::Integer,
-    valid_election_parties::AbstractVector{<:AbstractString},
-    crosswalk_path::AbstractString = CabinetRelease.default_crosswalk_path(),
-)::Vector{String}
-    report = CabinetRelease.translate(cabinet_parties; election_year,
-        valid_election_parties, crosswalk_path = crosswalk_path)
-    return sort(unique(String.(report.election_party)))
-end
-
-function coalition_metrics(
-    df::DataFrame,
-    parties;
-    vote_col,
-    seat_col,
-    party_col,
-    total_votes=nothing,
-    total_seats=nothing,
-    coalition_name=nothing,
-    mandate_id=nothing,
-    coalition_source=nothing,
-)
-    vote_col_sym = Symbol(vote_col)
-    seat_col_sym = Symbol(seat_col)
-    party_col_sym = Symbol(party_col)
-
-    for col in (vote_col_sym, seat_col_sym, party_col_sym)
-        hasproperty(df, col) || error("coalition_metrics: coluna ausente: $col")
-    end
-
-    party_labels = String.(df[!, party_col_sym])
-    counts = combine(groupby(DataFrame(party = party_labels), :party), nrow => :count)
-    if any(counts.count .> 1)
-        dupes = counts.party[counts.count .> 1]
-        error("coalition_metrics: partidos duplicados no DataFrame: $(join(String.(dupes), ", ")).")
-    end
-
-    coalition_parties = sort(unique(String.(parties)))
-
-    missing_parties = [p for p in coalition_parties if !(p in Set(party_labels))]
-    isempty(missing_parties) || error("Partido(s) da coalizão ausente(s) no DataFrame: $(join(missing_parties, ", ")).")
-
-    votes_vec = Float64.(coalesce.(df[!, vote_col_sym], 0))
-    seats_vec = Float64.(coalesce.(df[!, seat_col_sym], 0))
-    total_votes_val = total_votes === nothing ? sum(votes_vec) : Float64(total_votes)
-    total_seats_val = total_seats === nothing ? sum(seats_vec) : Float64(total_seats)
-    total_votes_val > 0 || error("total_votes deve ser > 0.")
-    total_seats_val > 0 || error("total_seats deve ser > 0.")
-
-    mask = in.(party_labels, Ref(Set(coalition_parties)))
-    coalition_votes = sum(votes_vec[mask])
-    coalition_seats = sum(seats_vec[mask])
-    vote_share = coalition_votes / total_votes_val
-    seat_share = coalition_seats / total_seats_val
-
-    return (
-        mandate_id = mandate_id,
-        coalition_source = coalition_source,
-        coalition_name = coalition_name,
-        coalition_votes = coalition_votes,
-        coalition_seats = coalition_seats,
-        vote_share = vote_share,
-        seat_share = seat_share,
-        seat_minus_vote = seat_share - vote_share,
-        inversion = (seat_share - vote_share) < 0,
-        n_parties_df = nrow(df),
-        n_parties_coalition = length(coalition_parties),
-    )
-end
-
-function cabinet_coalition_metrics_for_year(
-    seat_differentials::DataFrame;
-    coalition_year::Integer,
-    mandate_id,
-    election_year::Union{Nothing,Integer} = nothing,
-    path::AbstractString = get_coalition_path(),
-    crosswalk_path::AbstractString = _cabinet_to_election_crosswalk_path(),
-    vote_col::Symbol = :valid_total,
-    seat_col::Symbol = :total_seats,
-    party_col::Symbol = :SG_PARTIDO,
-)::DataFrame
-    periods_raw = coalitions_by_period_raw(; path = path)
-    periods_year = coalition_periods_overlapping_year(periods_raw, Int(coalition_year); path = path)
-    return cabinet_coalition_metrics_for_periods(
-        seat_differentials,
-        periods_year;
-        mandate_id = mandate_id,
-        election_year = election_year,
-        path = path,
-        crosswalk_path = crosswalk_path,
-        vote_col = vote_col,
-        seat_col = seat_col,
-        party_col = party_col,
-    )
-end
-
-function cabinet_coalition_metrics_for_periods(
-    seat_differentials::DataFrame,
-    periods::Dict{String,Vector{String}};
-    mandate_id,
-    election_year::Union{Nothing,Integer} = nothing,
-    path::AbstractString = get_coalition_path(),
-    crosswalk_path::AbstractString = _cabinet_to_election_crosswalk_path(),
-    vote_col::Symbol = :valid_total,
-    seat_col::Symbol = :total_seats,
-    party_col::Symbol = :SG_PARTIDO,
-)::DataFrame
-    mandate_election_year = election_year_for_mandate_id(String(mandate_id))
-    if election_year !== nothing && Int(election_year) != mandate_election_year
-        error(
-            "cabinet_coalition_metrics_for_periods: election_year=$(Int(election_year)) " *
-            "incompatível com mandate_id=$(String(mandate_id)) (esperado=$(mandate_election_year)).",
-        )
-    end
-    election_year_resolved = election_year === nothing ? mandate_election_year : Int(election_year)
-    keys_sorted = sort(collect(keys(periods)); by = period_sort_key)
-    valid_election_parties = String.(seat_differentials[!, party_col])
-
-    rows = NamedTuple[]
-    for period in keys_sorted
-        period_year = tryparse(Int, first(split(period, ".")))
-        period_year === nothing && error(
-            "cabinet_coalition_metrics_for_periods: não foi possível inferir ano do período $period.",
-        )
-        cabinet_canonicals = periods[period] # Stable release identities; never apply calendar aliases twice.
-        join_parties = cabinet_parties_in_election_space(
-            cabinet_canonicals;
-            election_year = election_year_resolved,
-            valid_election_parties = valid_election_parties,
-            crosswalk_path = crosswalk_path,
-        )
-        metrics = coalition_metrics(
-            seat_differentials,
-            join_parties;
-            vote_col = vote_col,
-            seat_col = seat_col,
-            party_col = party_col,
-            coalition_name = period,
-            mandate_id = mandate_id,
-            coalition_source = :cabinet,
-        )
-        push!(rows, merge(metrics, (coalition_year = period_year, coalition_col = String(period))))
-    end
-
-    return DataFrame(rows)
-end
-
-function cabinet_inversion_table_for_year(
-    seat_differentials::DataFrame;
-    coalition_year::Integer,
-    mandate_id,
-    election_year::Union{Nothing,Integer} = nothing,
-    path::AbstractString = get_coalition_path(),
-    crosswalk_path::AbstractString = _cabinet_to_election_crosswalk_path(),
-    vote_col::Symbol = :valid_total,
-    seat_col::Symbol = :total_seats,
-    party_col::Symbol = :SG_PARTIDO,
-)::DataFrame
-    metrics_df = cabinet_coalition_metrics_for_year(
-        seat_differentials;
-        coalition_year = coalition_year,
-        mandate_id = mandate_id,
-        election_year = election_year,
-        path = path,
-        crosswalk_path = crosswalk_path,
-        vote_col = vote_col,
-        seat_col = seat_col,
-        party_col = party_col,
-    )
-
-    nrow(metrics_df) == 0 && return DataFrame(
-        coalition_col = String[],
-        V_base_share = Float64[],
-        V_out_share = Float64[],
-        S_base_share = Float64[],
-        S_out_share = Float64[],
-        seatdiff_base = Float64[],
-        inversion = Bool[],
-        mandate_id = String[],
-        coalition_source = String[],
-    )
-
-    rows = NamedTuple[]
-    for row in eachrow(metrics_df)
-        push!(rows, (
-            coalition_col = String(row.coalition_col),
-            V_base_share = Float64(row.vote_share),
-            V_out_share = 1.0 - Float64(row.vote_share),
-            S_base_share = Float64(row.seat_share),
-            S_out_share = 1.0 - Float64(row.seat_share),
-            seatdiff_base = Float64(row.seat_minus_vote),
-            inversion = Bool(row.inversion),
-            mandate_id = String(row.mandate_id),
-            coalition_source = String(row.coalition_source),
-        ))
-    end
-    return DataFrame(rows)
-end
-
-function ideology_coalition_metrics(
-    seat_differentials::DataFrame;
-    mandate_id,
-    ideology_path::Union{Nothing,AbstractString} = nothing,
-    classification_year::Integer = 2023,
-    classification_root_dir::Union{Nothing,AbstractString} = nothing,
-    ideology_threshold::Float64 = 5.5,
-    coalition_name::AbstractString = "ideology_threshold_leq_5_5",
-    vote_col::Symbol = :valid_total,
-    seat_col::Symbol = :total_seats,
-    party_col::Symbol = :SG_PARTIDO,
-)
-    source_year = Int(classification_year)
-
-    loaded = if ideology_path === nothing
-        classification_root_dir === nothing ?
-        load_party_classification(source_year) :
-        load_party_classification(source_year; root_dir = String(classification_root_dir))
-    else
-        path = String(ideology_path)
-        isfile(path) || error("ideology_coalition_metrics: arquivo de classificação não encontrado: $path")
-
-        if source_year == 2023
-            df = PartyClassification2023.load_party_ordinal_classification_2023(path = path)
-            df[!, :source_year] = fill(source_year, nrow(df))
-            df
-        elseif source_year == 2025
-            df = CSV.read(path, DataFrame)
-            _postprocess_loaded_classification!(df, source_year)
-        else
-            error("ideology_coalition_metrics: classificação via ideology_path só suporta anos 2023/2025.")
-        end
-    end
-
-    hasproperty(loaded, :party_name_raw) || error("ideology_coalition_metrics: coluna party_name_raw ausente.")
-    hasproperty(loaded, :ideology_value_numeric) || error("ideology_coalition_metrics: coluna ideology_value_numeric ausente.")
-
-    values = loaded[!, :ideology_value_numeric]
-    mask = [x !== missing && Float64(x) <= ideology_threshold for x in values]
-    parties_raw = String.(loaded[mask, :party_name_raw])
-    isempty(parties_raw) && error("ideology_coalition_metrics: coalizão vazia para threshold=$ideology_threshold.")
-
-    canonicals = canonicalize_parties(parties_raw; year = source_year, strict = true)
-
-    return coalition_metrics(
-        seat_differentials,
-        canonicals;
-        vote_col = vote_col,
-        seat_col = seat_col,
-        party_col = party_col,
-        coalition_name = coalition_name,
-        mandate_id = mandate_id,
-        coalition_source = :ideology,
-    )
 end

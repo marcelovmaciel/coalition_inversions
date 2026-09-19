@@ -90,7 +90,8 @@ have a distinct coalition-level consequence: they can determine which
 combinations of parties command a legislative majority.
 
 % PROVENANCE-BEGIN abstract-compact-inversion
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=abstract-compact-inversion
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL
 %   row_at_generation: 9333
@@ -102,19 +103,19 @@ combinations of parties command a legislative majority.
 %     party_count: seven
 %     vote_share: 45.26
 %     seats: 258
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2014
 %   row_at_generation: 1
 %   fields:
 %     inverted_sets: 1
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
 %   fields:
 %     inverted_sets: 0
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2022
 %   row_at_generation: 3
@@ -207,20 +208,21 @@ cases include a compact right-side bloc with 45.26 percent of the vote and
 another in some inversions and offset one another in others.
 
 % PROVENANCE-BEGIN introduction-cabinet-set-scope
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=introduction-cabinet-set-scope
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
 %   fields:
 %     distinct_sets: 35
 %     inverted_sets: 2
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
 %   fields:
 %     inverted_sets: 0
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2014-a264923b9881ebab3d9b@2016-04-14
 %   row_at_generation: 5
@@ -228,7 +230,7 @@ another in some inversions and offset one another in others.
 %     days: 5
 %     start_inclusive: 2016-04-14
 %     end_exclusive: 2016-04-19
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2022-259238bde0cf94feb03e@2023-01-01
 %   row_at_generation: 41
@@ -266,7 +268,8 @@ districts: winning a seat is generally more demanding where fewer seats are
 available. Because each district is allocated independently, the resulting
 advantages and shortfalls carry into national party seat totals. 
 % PROVENANCE-BEGIN district-magnitudes
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=district-magnitudes
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=eight-seat-districts; metric=count; aggregation=sum
 %   row_at_generation: 24
@@ -274,7 +277,7 @@ advantages and shortfalls carry into national party seat totals.
 %     value: 11
 %   display:
 %     value: Eleven
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=district-magnitude; metric=S_d; aggregation=median
 %   row_at_generation: 22
@@ -282,7 +285,7 @@ advantages and shortfalls carry into national party seat totals.
 %     value: 10.0
 %   display:
 %     value: ten
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=district-magnitude; metric=S_d; aggregation=mean
 %   row_at_generation: 23
@@ -377,7 +380,8 @@ The national seat distribution then aggregates twenty-seven independently determ
 This layered translation occurs in an unusually fragmented party environment. Measured by the Laakso--Taagepera index, the effective numbers of electoral parties were 14.11 in 2014, 18.02 in 2018, and 12.34 in 2022; the corresponding effective numbers of parliamentary parties were 13.33, 16.41, and 9.91 \parencite{laakso1979effective}. The exact number of allocation units was not identical to the number of party labels, especially when district coalitions or national federations pooled votes. Even so, each election produced a Chamber in which legislative majorities had to be assembled across numerous partisan units. Fragmentation makes the political consequences of modest party-level gains and losses depend on how those parties are combined.
 
 % PROVENANCE-BEGIN party-fragmentation
-% source: processing/Processing/output/decomposition/tables/report/party_fragmentation_summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-fragmentation
+% source: build/results/accounting/tables/summaries/party_fragmentation_summary.csv
 % row:
 %   key: election_year=2014
 %   row_at_generation: 1
@@ -387,7 +391,7 @@ This layered translation occurs in an unusually fragmented party environment. Me
 %   display:
 %     effective_electoral: 14.11
 %     effective_parliamentary: 13.33
-% source: processing/Processing/output/decomposition/tables/report/party_fragmentation_summary.csv
+% source: build/results/accounting/tables/summaries/party_fragmentation_summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
@@ -397,7 +401,7 @@ This layered translation occurs in an unusually fragmented party environment. Me
 %   display:
 %     effective_electoral: 18.02
 %     effective_parliamentary: 16.41
-% source: processing/Processing/output/decomposition/tables/report/party_fragmentation_summary.csv
+% source: build/results/accounting/tables/summaries/party_fragmentation_summary.csv
 % row:
 %   key: election_year=2022
 %   row_at_generation: 3
@@ -667,7 +671,8 @@ election-year parties from which their vote and seat totals derive. This yields
 2022. Appendix~\ref{app:composition} reports their membership.
 
 % PROVENANCE-BEGIN cabinet-set-construction
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-set-construction
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2014
 %   row_at_generation: 1
@@ -675,7 +680,7 @@ election-year parties from which their vote and seat totals derive. This yields
 %     distinct_sets: 12
 %     analytical_periods: 20
 %     observed_days: 1461
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
@@ -683,7 +688,7 @@ election-year parties from which their vote and seat totals derive. This yields
 %     distinct_sets: 18
 %     analytical_periods: 20
 %     observed_days: 1461
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2022
 %   row_at_generation: 3
@@ -699,7 +704,8 @@ number of officeholders. Alternative codings for the recorded cases do not
 change which cabinet configurations invert or the 260 days for which an
 inversion is observed.
 % PROVENANCE-BEGIN cabinet-evidence-and-duration
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-evidence-and-duration
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -735,7 +741,8 @@ quota, the largest positive differential that year. PSD and PTB received another
 deficits of 4.43 seats for PSDB and 4.20 for PSOL.
 
 % PROVENANCE-BEGIN party-differentials-2014
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-differentials-2014
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PMDB
 %   row_at_generation: 8
@@ -743,7 +750,7 @@ deficits of 4.43 seats for PSDB and 4.20 for PSOL.
 %     d_i: 8.133380861621642
 %   display:
 %     d_i: 8.13
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PSD
 %   row_at_generation: 20
@@ -751,7 +758,7 @@ deficits of 4.43 seats for PSDB and 4.20 for PSOL.
 %     d_i: 4.552732200018501
 %   display:
 %     d_i: 4.55
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PTB
 %   row_at_generation: 28
@@ -759,7 +766,7 @@ deficits of 4.43 seats for PSDB and 4.20 for PSOL.
 %     d_i: 4.374724383417064
 %   display:
 %     d_i: 4.37
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PSDB
 %   row_at_generation: 21
@@ -767,7 +774,7 @@ deficits of 4.43 seats for PSDB and 4.20 for PSOL.
 %     d_i: -4.4303847839739765
 %   display:
 %     d_i: 4.43
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PSOL
 %   row_at_generation: 24
@@ -786,7 +793,8 @@ its vote-to-seat conversion within districts and the distribution of its votes
 across districts with different electoral weights.
 
 % PROVENANCE-BEGIN party-differentials-2018
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-differentials-2018
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2018; party=PP
 %   row_at_generation: 47
@@ -794,7 +802,7 @@ across districts with different electoral weights.
 %     d_i: 8.763869279337671
 %   display:
 %     d_i: 8.76
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2018; party=PR
 %   row_at_generation: 50
@@ -802,7 +810,7 @@ across districts with different electoral weights.
 %     d_i: 5.724395499520222
 %   display:
 %     d_i: 5.72
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2018; party=MDB
 %   row_at_generation: 36
@@ -810,7 +818,7 @@ across districts with different electoral weights.
 %     d_i: 5.600328135814278
 %   display:
 %     d_i: 5.60
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2018; party=PSL
 %   row_at_generation: 59
@@ -818,7 +826,7 @@ across districts with different electoral weights.
 %     d_i: -7.697795432903889
 %   display:
 %     d_i: 7.70
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2018; party=NOVO
 %   row_at_generation: 37
@@ -836,7 +844,8 @@ side therefore placed substantial surpluses inside many available coalition
 combinations.
 
 % PROVENANCE-BEGIN party-differentials-2022
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-differentials-2022
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PL
 %   row_at_generation: 79
@@ -844,7 +853,7 @@ combinations.
 %     d_i: 13.779741154081268
 %   display:
 %     d_i: 13.78
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=UNIÃO
 %   row_at_generation: 98
@@ -852,7 +861,7 @@ combinations.
 %     d_i: 11.103563583757866
 %   display:
 %     d_i: 11.10
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PT
 %   row_at_generation: 92
@@ -860,7 +869,7 @@ combinations.
 %     d_i: 6.937954845575375
 %   display:
 %     d_i: 6.94
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PP
 %   row_at_generation: 83
@@ -883,7 +892,7 @@ overrepresentation therefore appears only in 2022.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{party_representation_profile.pdf}
+\includegraphics[width=\textwidth]{../../../build/assets/party_representation_profile.pdf}
 \caption{Party-level representation profiles, 2014, 2018, and 2022}
 \label{fig:vote-seat}
 \begin{flushleft}
@@ -900,7 +909,8 @@ therefore depends on the size-weighted combination of member gains and losses
 and on whether their total bridges the distance to 257 seats.
 
 % PROVENANCE-BEGIN party-ratios-2022
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-ratios-2022
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PV
 %   row_at_generation: 94
@@ -910,7 +920,7 @@ and on whether their total bridges the distance to 257 seats.
 %   display:
 %     R_i: 1.341
 %     d_i: 1.52
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PL
 %   row_at_generation: 79
@@ -935,7 +945,8 @@ Table~\ref{tab:cabinet-inversions} reports these sets and the
 within-district and between-district components of their differentials.
 
 % PROVENANCE-BEGIN cabinet-inversion-overview
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-inversion-overview
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -945,13 +956,13 @@ within-district and between-district components of their differentials.
 %   display:
 %     distinct_sets: 35
 %     inverted_sets: Two
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
 %   fields:
 %     inverted_sets: 0
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b
 %   row_at_generation: 5
@@ -959,7 +970,7 @@ within-district and between-district components of their differentials.
 %     canonical_membership: PCdoB;PDT;PMDB;PR;PSD;PT;PTB
 %     display_label: 14-05
 %     administrations: dilma_2
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e
 %   row_at_generation: 31
@@ -979,7 +990,7 @@ within-district and between-district components of their differentials.
 \footnotesize
 \setlength{\tabcolsep}{2pt}
 \renewcommand{\arraystretch}{1.06}
-\input{table_observed_inversion_decomposition.tex}
+\input{../../../build/assets/table_observed_inversion_decomposition.tex}
 \begin{flushleft}
 \footnotesize Notes: Votes, seats, and party labels refer to the
 corresponding election. \(A_C\) and \(B_C\) are the within-district
@@ -998,7 +1009,8 @@ therefore sufficient to preserve the majority. Set 14-05 is observed for five da
 on April 19 reduces the party set to 223 seats and ends the inversion.
 
 % PROVENANCE-BEGIN cabinet-dilma-2016
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-dilma-2016
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b
 %   row_at_generation: 5
@@ -1019,7 +1031,7 @@ on April 19 reduces the party set to 223 seats and ends the inversion.
 %     q_C: 238.73
 %     d_C: 20.27
 %     R_C: 1.085
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2014-a264923b9881ebab3d9b@2016-04-14
 %   row_at_generation: 5
@@ -1029,7 +1041,7 @@ on April 19 reduces the party set to 223 seats and ends the inversion.
 %     days: 5
 %   display:
 %     days: five
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-8d3ff5ab64ec71cc91c5
 %   row_at_generation: 6
@@ -1043,7 +1055,7 @@ on April 19 reduces the party set to 223 seats and ends the inversion.
 
 % Threshold calculation from CV5-005: 257 - q_C = 18.271092157910495;
 % display as 18.27 seats, without introducing a separate threshold symbol.
-% Historical event source: cabinet_dataset/releases/2026-03-19-history-v5-candidate/transitions.csv.
+% Membership-date source: data/cabinet/cabinet_periods.csv (CV5-002 through CV5-006).
 % Stable REPUBLICANOS ceases representation on 2016-03-18;
 % PP leaves on 2016-04-14; PSD leaves on 2016-04-19.
 % Use PRB in the manuscript for the corresponding 2014 party label.
@@ -1060,7 +1072,8 @@ A positive seat differential is not, by itself, evidence of an inversion.
 % not by treating the reused 2017.1 label as the same observation.
 
 % PROVENANCE-BEGIN cabinet-temer-no-inversion
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-temer-no-inversion
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-b99061a13a4cbf708682
 %   row_at_generation: 10
@@ -1071,7 +1084,7 @@ A positive seat differential is not, by itself, evidence of an inversion.
 %   display:
 %     seats: 268
 %     vote_share: 50.03
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2014-b99061a13a4cbf708682@2018-04-02
 %   row_at_generation: 18
@@ -1079,7 +1092,7 @@ A positive seat differential is not, by itself, evidence of an inversion.
 %     start_inclusive: 2018-04-02
 %     end_exclusive: 2018-04-06
 %     days: 4
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-3a21551efde30c618990
 %   row_at_generation: 11
@@ -1090,7 +1103,7 @@ A positive seat differential is not, by itself, evidence of an inversion.
 %   display:
 %     seats: 247
 %     vote_share: 45.83
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2014-3a21551efde30c618990@2018-04-06
 %   row_at_generation: 19
@@ -1110,13 +1123,14 @@ to inversion.
 % 250-seat successor. Neither identifies the new observations.
 
 % PROVENANCE-BEGIN cabinet-bolsonaro-no-inversion
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-bolsonaro-no-inversion
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
 %   fields:
 %     inverted_sets: 0
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2018; cabinet_party_set_id=C2018-a86e04ffb7898c05a4c4
 %   row_at_generation: 23
@@ -1135,7 +1149,7 @@ to inversion.
 %     q_C: 204.14
 %     d_C: 17.86
 %     R_C: 1.087
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2018-a86e04ffb7898c05a4c4@2021-07-28
 %   row_at_generation: 33
@@ -1159,8 +1173,9 @@ vote, ending the inversion by adding a vote majority rather than by removing
 the seat majority, as occurred in the Dilma case.
 
 % PROVENANCE-BEGIN cabinet-lula-transition
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-lula-transition
 % note: Previous display assertion display_label: 22-01 (no longer printed in this paragraph).
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e
 %   row_at_generation: 31
@@ -1178,7 +1193,7 @@ the seat majority, as occurred in the Dilma case.
 %     q_C: 250.80
 %     d_C: 12.20
 %     R_C: 1.049
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2022-259238bde0cf94feb03e@2023-01-01
 %   row_at_generation: 41
@@ -1188,7 +1203,7 @@ the seat majority, as occurred in the Dilma case.
 %     days: 255
 %   display:
 %     days: 255
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2022; cabinet_party_set_id=C2022-d7aa8241899cd03a076c
 %   row_at_generation: 32
@@ -1224,13 +1239,14 @@ pattern appears for \(B_C\). of coalition support across
 districts.
 
 % PROVENANCE-BEGIN cabinet-components-and-party-size
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-components-and-party-size
 % note: Previous display assertion mean_vote_share: 5.72 (no longer printed in this paragraph).
 % note: Previous display assertion mean_vote_share: 0.83 (no longer printed in this paragraph).
 % note: Previous display assertion mean_vote_share: 5.41 (no longer printed in this paragraph).
 % note: Previous display assertion mean_vote_share: 1.84 (no longer printed in this paragraph).
 % note: Previous display assertion mean_vote_share: 5.57 (no longer printed in this paragraph).
 % note: Previous display assertion mean_vote_share: 1.66 (no longer printed in this paragraph).
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -1243,64 +1259,64 @@ districts.
 %     distinct_sets: 35
 %     B_C_positive: thirteen
 %     large_positive_exceeds_negative: 34
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2014; ever_in_cabinet=true
 %   row_at_generation: 1
 %   fields:
 %     mean_vote_share: 0.05720562356882122
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2014; ever_in_cabinet=false
 %   row_at_generation: 2
 %   fields:
 %     mean_vote_share: 0.008347979203981275
-% source: processing/Processing/output/decomposition/tables/report/party_size_groups.csv
+% source: build/results/accounting/tables/summaries/party_size_groups.csv
 % row:
 %   key: election=2014; size_group=>=5%
 %   row_at_generation: 4
 %   fields:
 %     n: 7
 %     positive_A_i_count: 6
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2018; ever_in_cabinet=true
 %   row_at_generation: 3
 %   fields:
 %     mean_vote_share: 0.05412186779334364
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2018; ever_in_cabinet=false
 %   row_at_generation: 4
 %   fields:
 %     mean_vote_share: 0.018351252882662542
-% source: processing/Processing/output/decomposition/tables/report/party_size_groups.csv
+% source: build/results/accounting/tables/summaries/party_size_groups.csv
 % row:
 %   key: election=2018; size_group=>=5%
 %   row_at_generation: 8
 %   fields:
 %     n: 9
 %     positive_A_i_count: 8
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2022; ever_in_cabinet=true
 %   row_at_generation: 5
 %   fields:
 %     mean_vote_share: 0.05567791806230482
-% source: processing/Processing/output/decomposition/tables/report/party_size_cabinet_summary.csv
+% source: build/results/accounting/tables/summaries/party_size_cabinet_summary.csv
 % row:
 %   key: election=2022; ever_in_cabinet=false
 %   row_at_generation: 6
 %   fields:
 %     mean_vote_share: 0.016593249162617108
-% source: processing/Processing/output/decomposition/tables/report/party_size_groups.csv
+% source: build/results/accounting/tables/summaries/party_size_groups.csv
 % row:
 %   key: election=2022; size_group=>=5%
 %   row_at_generation: 12
 %   fields:
 %     n: 7
 %     positive_A_i_count: 7
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2018; cabinet_party_set_id=C2018-64af9fe5690d39041c41
 %   row_at_generation: 20
@@ -1311,7 +1327,7 @@ districts.
 %     large_party_positive_A: 4.2634970812796755
 %     gross_negative_A: -5.49437225087713
 %     large_positive_minus_all_negative_A: -1.2308751695974542
-% source: generated/cabinet_party_sets/occurrences.csv
+% source: build/results/cabinet_sets/occurrences.csv
 % row:
 %   key: scenario_id=primary; occurrence_id=C2018-64af9fe5690d39041c41@2020-12-09
 %   row_at_generation: 30
@@ -1337,7 +1353,8 @@ Lula coalition. Only in the former is the positive between-district
 component also needed to bridge the proportional distance to 257 seats.
 
 % PROVENANCE-BEGIN cabinet-decomposition-thresholds
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-decomposition-thresholds
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b
 %   row_at_generation: 5
@@ -1353,7 +1370,7 @@ component also needed to bridge the proportional distance to 257 seats.
 %     q_C: 238.73
 %     B_C: 4.53
 %     seats: 259
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e
 %   row_at_generation: 31
@@ -1386,7 +1403,8 @@ recurrence. Most overrepresented sets remain either below both majority
 thresholds or above both.
 
 % PROVENANCE-BEGIN cabinet-overrepresentation
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-overrepresentation
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -1400,7 +1418,7 @@ thresholds or above both.
 %     overrepresented_sets: 33
 %     inverted_sets: two
 %     underrepresented_sets: two
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2018; cabinet_party_set_id=C2018-72d588ebc21b8a1a1f9e
 %   row_at_generation: 15
@@ -1409,7 +1427,7 @@ thresholds or above both.
 %     display_label: 18-03
 %     analytical_period_labels: 2020.2;2020.4
 %     occurrence_count: 2
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2018; cabinet_party_set_id=C2018-3d6dc0b0e630f95b3cc9
 %   row_at_generation: 30
@@ -1425,7 +1443,7 @@ thresholds or above both.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.98\textwidth]{observed_coalition_timeline.pdf}
+\includegraphics[width=.98\textwidth]{../../../build/assets/observed_coalition_timeline.pdf}
 \caption{Cabinet party-set vote shares, seat shares, and representation ratios}
 \label{fig:timeline}
 
@@ -1439,8 +1457,9 @@ distribution can therefore sustain different majority relations as cabinet
 membership changes.
 
 % PROVENANCE-BEGIN cabinet-inversion-duration
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-inversion-duration
 % note: Previous display assertion inversion_episodes: two (no longer printed in this paragraph).
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2014
 %   row_at_generation: 1
@@ -1450,14 +1469,14 @@ membership changes.
 %   display:
 %     observed_days: 1,461
 %     inversion_days: 5
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
 %   fields:
 %     observed_days: 1461
 %     inversion_days: 0
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2022
 %   row_at_generation: 3
@@ -1467,7 +1486,7 @@ membership changes.
 %   display:
 %     observed_days: 1,174
 %     inversion_days: 255
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -1502,7 +1521,8 @@ identifies the minimal inversion intervals themselves, while
 Figure~\ref{fig:heatmaps} places them within the full exact-connected
 interval space.
 % PROVENANCE-BEGIN ideological-k0-summary
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-k0-summary
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=seat_winning; k=0
 %   row_at_generation: 1
@@ -1514,7 +1534,7 @@ interval space.
 %     minimal_inversions: four
 %     minimal_seat_majority_coalitions: eight
 %     ideological_party_count: 28
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=0
 %   row_at_generation: 5
@@ -1526,7 +1546,7 @@ interval space.
 %     minimal_inversions: one
 %     minimal_seat_majority_coalitions: eight
 %     ideological_party_count: 30
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0
 %   row_at_generation: 9
@@ -1554,7 +1574,8 @@ PTB--PR interval: 47.45 percent of all valid votes yields exactly 257 seats, a
 quota of 243.40 seats, and a differential of 13.60 seats.
 
 % PROVENANCE-BEGIN ideological-k0-2014
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-k0-2014
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=seat_winning; k=0
 %   row_at_generation: 1
@@ -1566,7 +1587,7 @@ quota of 243.40 seats, and a differential of 13.60 seats.
 %     minimal_inversions: four
 %     inverted_members_min: twelve
 %     inverted_members_max: fifteen
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-2014-k0-other-inversions; metric=count; aggregation=sum_minus_one
 %   row_at_generation: 25
@@ -1574,7 +1595,7 @@ quota of 243.40 seats, and a differential of 13.60 seats.
 %     value: 3
 %   display:
 %     value: three
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2014; ideological_universe=seat_winning; k=0; coalition_id=PTB|PT DO B|SOLIDARIEDADE|PMN|PHS|PMDB|PSD|PSDB|PTN|PRTB|PROS|PRP|PR
 %   row_at_generation: 188
@@ -1611,7 +1632,8 @@ vote-majority threshold under exact connectedness, even though no cabinet
 party set linked to the same election inverts in the primary chronology.
 
 % PROVENANCE-BEGIN ideological-k0-2018
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-k0-2018
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB
 %   row_at_generation: 4161
@@ -1628,7 +1650,7 @@ party set linked to the same election inverts in the primary chronology.
 %     seats: 267
 %     q_C: 256.25
 %     d_C: 10.75
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=0
 %   row_at_generation: 5
@@ -1636,7 +1658,7 @@ party set linked to the same election inverts in the primary chronology.
 %     non_inverted_minimal_majorities: 7
 %   display:
 %     non_inverted_minimal_majorities: seven
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=2018
 %   row_at_generation: 2
@@ -1653,7 +1675,8 @@ MDB--UNIÃO interval, spanning the center-right through the far right,
 and the seven-party PP--PL interval, confined to the right and far right.
 
 % PROVENANCE-BEGIN ideological-k0-2022-membership
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-k0-2022-membership
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=PT|PSB|REDE|PDT|PV|SOLIDARIEDADE|CIDADANIA|AVANTE|MDB|PSDB|PSD|PODE|PROS|PTB|PP
 %   row_at_generation: 9138
@@ -1663,7 +1686,7 @@ and the seven-party PP--PL interval, confined to the right and far right.
 %   display:
 %     party_count: fifteen
 %     d_C: 9.36
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=PSB|REDE|PDT|PV|SOLIDARIEDADE|CIDADANIA|AVANTE|MDB|PSDB|PSD|PODE|PROS|PTB|PP|REPUBLICANOS|PSC
 %   row_at_generation: 9160
@@ -1673,7 +1696,7 @@ and the seven-party PP--PL interval, confined to the right and far right.
 %   display:
 %     party_count: sixteen
 %     d_C: 15.10
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=MDB|PSDB|PSD|PODE|PROS|PTB|PP|REPUBLICANOS|PSC|UNIÃO
 %   row_at_generation: 9273
@@ -1681,7 +1704,7 @@ and the seven-party PP--PL interval, confined to the right and far right.
 %     party_count: 10
 %   display:
 %     party_count: ten
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL
 %   row_at_generation: 9333
@@ -1705,7 +1728,8 @@ support requires a larger advantage to reach the same threshold. All baseline
 Appendix~\ref{app:minimal-connected-winning}.
 
 % PROVENANCE-BEGIN ideological-k0-2022-quantities
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-k0-2022-quantities
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=MDB|PSDB|PSD|PODE|PROS|PTB|PP|REPUBLICANOS|PSC|UNIÃO
 %   row_at_generation: 9273
@@ -1722,7 +1746,7 @@ Appendix~\ref{app:minimal-connected-winning}.
 %     r_C: 4.51
 %     d_C: 12.51
 %     seats: 265
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL
 %   row_at_generation: 9333
@@ -1739,7 +1763,7 @@ Appendix~\ref{app:minimal-connected-winning}.
 %     r_C: 24.81
 %     d_C: 25.81
 %     seats: 258
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PL
 %   row_at_generation: 79
@@ -1747,7 +1771,7 @@ Appendix~\ref{app:minimal-connected-winning}.
 %     d_i: 13.779741154081268
 %   display:
 %     d_i: 13.78
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=UNIÃO
 %   row_at_generation: 98
@@ -1755,7 +1779,7 @@ Appendix~\ref{app:minimal-connected-winning}.
 %     d_i: 11.103563583757866
 %   display:
 %     d_i: 11.10
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-k0-totals; metric=minimal_inversions; aggregation=sum
 %   row_at_generation: 2
@@ -1766,7 +1790,7 @@ Appendix~\ref{app:minimal-connected-winning}.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=.88\textwidth]
-  {figures/minimal_connected_winning_inversions_3x1_diamond.png}
+  {../../../build/assets/minimal_connected_winning_inversions_3x1_diamond.png}
   \caption{Minimal connected winning inversions by election year. Brackets
     identify coalition endpoints and report vote shares and seats; the diamond
     marks PT as a common reference point.}
@@ -1829,11 +1853,11 @@ that can reinforce one another when adjacent parties are combined.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.31\textwidth]{ideological_interval_heatmap_2014.pdf}\hfill
-\includegraphics[width=.31\textwidth]{ideological_interval_heatmap_2018.pdf}\hfill
-\includegraphics[width=.31\textwidth]{ideological_interval_heatmap_2022.pdf}
+\includegraphics[width=.31\textwidth]{../../../build/assets/ideological_interval_heatmap_2014.pdf}\hfill
+\includegraphics[width=.31\textwidth]{../../../build/assets/ideological_interval_heatmap_2018.pdf}\hfill
+\includegraphics[width=.31\textwidth]{../../../build/assets/ideological_interval_heatmap_2022.pdf}
 \par\vspace{2pt}
-\includegraphics[width=.95\textwidth]{ideological_interval_heatmap_legend.pdf}
+\includegraphics[width=.95\textwidth]{../../../build/assets/ideological_interval_heatmap_legend.pdf}
 \caption{Exact-connected (\(k=0\)) ideological interval status by election}
 \label{fig:heatmaps}
 \begin{flushleft}
@@ -1860,7 +1884,8 @@ to the ideological order; Appendix~\ref{app:ideological-universes}
 reports the comparison.
 
 % PROVENANCE-BEGIN ideological-robustness-overview
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=ideological-robustness-overview
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=1; coalition_id=PCdoB|PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PODE
 %   row_at_generation: 5105
@@ -1901,7 +1926,7 @@ seat-differential decomposition}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.06}
-\input{table_accounting_minimal_ideological.tex}
+\input{../../../build/assets/table_accounting_minimal_ideological.tex}
 \end{table}
 \FloatBarrier
 
@@ -1920,7 +1945,8 @@ smaller members also matter. The resulting \(A_C\) is positive in all
 35 distinct cabinet party sets, including the two inversions.
 
 % PROVENANCE-BEGIN party-within-contributions
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-within-contributions
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PR
 %   row_at_generation: 13
@@ -1928,7 +1954,7 @@ smaller members also matter. The resulting \(A_C\) is positive in all
 %     A_i: 5.0428381901786
 %   display:
 %     A_i: 5.04
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2014; party=PSD
 %   row_at_generation: 20
@@ -1936,7 +1962,7 @@ smaller members also matter. The resulting \(A_C\) is positive in all
 %     A_i: 4.645941310001025
 %   display:
 %     A_i: 4.65
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=UNIÃO
 %   row_at_generation: 98
@@ -1944,7 +1970,7 @@ smaller members also matter. The resulting \(A_C\) is positive in all
 %     A_i: 9.356662317791708
 %   display:
 %     A_i: 9.36
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PT
 %   row_at_generation: 92
@@ -1952,7 +1978,7 @@ smaller members also matter. The resulting \(A_C\) is positive in all
 %     A_i: 9.068253408506147
 %   display:
 %     A_i: 9.07
-% source: generated/cabinet_party_sets/summary.csv
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -1978,7 +2004,8 @@ in the other three minimal connected inversions. For the initial Lula
 cabinet, it also offsets the within-district gain.
 
 % PROVENANCE-BEGIN party-between-contributions
-% source: generated/cabinet_party_sets/summary.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=party-between-contributions
+% source: build/results/cabinet_sets/summary.csv
 % row:
 %   key: election_year=all
 %   row_at_generation: 4
@@ -1988,7 +2015,7 @@ cabinet, it also offsets the within-district gain.
 %   display:
 %     distinct_sets: 35
 %     B_C_positive: thirteen
-% source: processing/Processing/output/decomposition/raw/party_accounting_all_years.csv
+% source: build/results/accounting/raw/party_accounting_all_years.csv
 % row:
 %   key: election_year=2022; party=PT
 %   row_at_generation: 92
@@ -1998,7 +2025,7 @@ cabinet, it also offsets the within-district gain.
 %   display:
 %     A_i: 9.07
 %     B_i: -2.13
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b
 %   row_at_generation: 5
@@ -2006,7 +2033,7 @@ cabinet, it also offsets the within-district gain.
 %     canonical_membership: PCdoB;PDT;PMDB;PR;PSD;PT;PTB
 %     A_C: 15.742022264747815
 %     B_C: 4.529069893162678
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e
 %   row_at_generation: 31
@@ -2030,7 +2057,8 @@ a larger within-district gain and a connected seat majority with a much
 smaller proportional shortfall.
 
 % PROVENANCE-BEGIN cabinet-ideology-2018-components
-% source: generated/cabinet_party_sets/cabinet_party_sets.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=cabinet-ideology-2018-components
+% source: build/results/accounting/raw/cabinet_party_set_accounting.csv
 % row:
 %   key: election_year=2018; cabinet_party_set_id=C2018-a86e04ffb7898c05a4c4
 %   row_at_generation: 23
@@ -2046,7 +2074,7 @@ smaller proportional shortfall.
 %     seats: 222
 %     A_C: 21.41
 %     B_C: -3.55
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=0; left_endpoint=PT; right_endpoint=PSDB; gap_count=0
 %   row_at_generation: 4161
@@ -2119,7 +2147,8 @@ between-district weighting account for the larger share of the resulting
 seat differential.
 
 % PROVENANCE-BEGIN all-party-mdb-uniao-components
-% source: processing/Processing/output/paper/raw/ideology_k_gap_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=all-party-mdb-uniao-components
+% source: build/results/domains/raw/ideology_k_gap_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=0; coalition_id=MDB|PMN|PSDB|PSD|PMB|PODE|PROS|PRTB|AGIR|PTB|PP|DC|REPUBLICANOS|PSC|UNIÃO
 %   row_at_generation: 25594
@@ -2133,7 +2162,7 @@ seat differential.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{cross_domain_components.pdf}
+\includegraphics[width=\textwidth]{../../../build/assets/cross_domain_components.pdf}
 \caption{Within-district and between-district contributions across coalition domains}
 \label{fig:cross-domain-components}
 \end{figure}
@@ -2461,12 +2490,12 @@ systems can produce.
 \subsection{Cabinet membership}
 \label{app:composition}
 
-\input{table_appendix_cabinet_membership_compact.tex}
+\input{../../../build/assets/table_appendix_cabinet_membership_compact.tex}
 
 \subsection{Baseline minimal winning intervals}
 \label{app:minimal-connected-winning}
 
-\input{table_appendix_baseline_intervals_compact.tex}
+\input{../../../build/assets/table_appendix_baseline_intervals_compact.tex}
 
 \subsection{Selected member-party contributions}
 \label{app:party-contributions}
@@ -2476,7 +2505,7 @@ Here \(d_i=A_i+B_i\), \(A_C=\sum_{i\in C}A_i\), and
 identify separate causal effects; in 2014 and 2018, party attribution also
 reflects joint-list seat allocation.
 
-\input{table_appendix_selected_party_contributions.tex}
+\input{../../../build/assets/table_appendix_selected_party_contributions.tex}
 
 \clearpage
 \subsection{Inverted cabinets in ideological order}
@@ -2492,7 +2521,8 @@ connected inversions lie entirely to PT's right. This comparison concerns the
 two displayed cabinets.
 
 % PROVENANCE-BEGIN appendix-selected-cabinet-spans
-% source: processing/Processing/output/paper/tables/table_appendix_cabinet_interval_bridge.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-selected-cabinet-spans
+% source: build/results/domains/tables/table_appendix_cabinet_interval_bridge.csv
 % row:
 %   key: display_label=14-05
 %   row_at_generation: 5
@@ -2501,7 +2531,7 @@ two displayed cabinets.
 %     closure_start_party: PCdoB
 %     closure_end_party: PR
 %     closure_gap_n: 12
-% source: processing/Processing/output/paper/tables/table_appendix_cabinet_interval_bridge.csv
+% source: build/results/domains/tables/table_appendix_cabinet_interval_bridge.csv
 % row:
 %   key: display_label=22-01
 %   row_at_generation: 31
@@ -2514,7 +2544,7 @@ two displayed cabinets.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{cabinet_membership_inversions.pdf}
+\includegraphics[width=\textwidth]{../../../build/assets/cabinet_membership_inversions.pdf}
 \caption{Cabinet inversions in election-year ideological order. Filled markers
 identify members; open circles identify nonmembers, including omitted parties
 inside each cabinet's span. PT is a filled diamond. All 28 seat-winning parties
@@ -2554,33 +2584,34 @@ decompositions for both universes remain in the machine-readable replication
 outputs.
 
 % PROVENANCE-BEGIN appendix-compact-domain-totals
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-compact-domain-totals
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-k0-totals; metric=minimal_seat_majority_coalitions; aggregation=sum
 %   row_at_generation: 3
 %   fields:
 %     value: 20
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-k1-surviving-connected; metric=count; aggregation=sum
 %   row_at_generation: 5
 %   fields:
 %     value: 6
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=seat_winning; k=1
 %   row_at_generation: 3
 %   fields:
 %     minimal_seat_majority_coalitions: 87
 %     minimal_inversions: 46
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=1
 %   row_at_generation: 7
 %   fields:
 %     minimal_seat_majority_coalitions: 108
 %     minimal_inversions: 42
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=1
 %   row_at_generation: 11
@@ -2589,7 +2620,7 @@ outputs.
 %     minimal_inversions: 12
 % PROVENANCE-END appendix-compact-domain-totals
 
-\input{table_appendix_domain_counts_compact.tex}
+\input{../../../build/assets/table_appendix_domain_counts_compact.tex}
 
 The strongest inversion is the one with the lowest national vote share among
 the relevant minimal inversions. Under the primary one-gap relaxation, the
@@ -2599,7 +2630,8 @@ outcomes: PTB--PR has 47.45 percent and 257 seats; PP--PL has 45.26 percent and
 47.59 percent of all valid votes and 257 seats.
 
 % PROVENANCE-BEGIN appendix-compact-one-gap-strongest
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-compact-one-gap-strongest
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=seat_winning; k=1
 %   row_at_generation: 3
@@ -2607,7 +2639,7 @@ outcomes: PTB--PR has 47.45 percent and 257 seats; PP--PL has 45.26 percent and
 %     strongest_inversion_coalition: PTB--PR
 %     strongest_inversion_vote_share: 0.4744616510767348
 %     strongest_inversion_seats: 257
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2018; ideological_universe=seat_winning; k=1
 %   row_at_generation: 7
@@ -2615,7 +2647,7 @@ outcomes: PTB--PR has 47.45 percent and 257 seats; PP--PL has 45.26 percent and
 %     strongest_inversion_coalition: PCdoB--PODE, omitting PSDB
 %     strongest_inversion_vote_share: 0.4759116927539931
 %     strongest_inversion_seats: 257
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=1
 %   row_at_generation: 11
@@ -2631,68 +2663,69 @@ The three negative-\(A_C\) cases (two in 2014 and one in 2022) have positive
 between-district components that more than offset the shortfall.
 
 % PROVENANCE-BEGIN appendix-compact-component-frequencies
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-compact-component-frequencies
 % note: 97 positive cases = 100 minimal inversions minus 3 negative cases; absence of zeros and exact signs are checked by writing/make_appendix_assets.py.
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=all
 %   row_at_generation: 61
 %   fields:
 %     value: 100
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=all
 %   row_at_generation: 62
 %   fields:
 %     value: 77
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2014
 %   row_at_generation: 68
 %   fields:
 %     value: 46
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2014
 %   row_at_generation: 69
 %   fields:
 %     value: 40
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2018
 %   row_at_generation: 75
 %   fields:
 %     value: 42
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2018
 %   row_at_generation: 76
 %   fields:
 %     value: 32
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2022
 %   row_at_generation: 82
 %   fields:
 %     value: 12
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2022
 %   row_at_generation: 83
 %   fields:
 %     value: 5
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-k1-negative-within; metric=A_C; aggregation=count_negative
 %   row_at_generation: 7
 %   fields:
 %     value: 3
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-2014-k1-negative-within; metric=A_C; aggregation=count_negative
 %   row_at_generation: 8
 %   fields:
 %     value: 2
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=seat-winning-2022-k1-negative-within; metric=A_C; aggregation=count_negative
 %   row_at_generation: 9
@@ -2717,7 +2750,8 @@ PCdoB--PODE omitting PSDB, with 47.82 percent of the vote and the same 257 seats
 compared with 47.59 percent in the primary universe.
 
 % PROVENANCE-BEGIN appendix-compact-universe-strongest
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-compact-universe-strongest
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=0
 %   row_at_generation: 2
@@ -2725,7 +2759,7 @@ compared with 47.59 percent in the primary universe.
 %     strongest_inversion_coalition: PTB--PR
 %     strongest_inversion_vote_share: 0.47591256254894826
 %     strongest_inversion_seats: 257
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=0
 %   row_at_generation: 10
@@ -2733,21 +2767,21 @@ compared with 47.59 percent in the primary universe.
 %     strongest_inversion_coalition: PP--PL
 %     strongest_inversion_vote_share: 0.4534989317772354
 %     strongest_inversion_seats: 258
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=all-parties-k0-totals; metric=minimal_inversions; aggregation=sum; ideological_universe=all_parties; k=0; election=all
 %   row_at_generation: 4
 %   fields:
 %     value: 6
 %     source_row_count: 3
-% source: processing/Processing/output/paper/tables/prose_analysis_summaries.csv
+% source: build/results/accounting/tables/prose_analysis_summaries.csv
 % row:
 %   key: summary=all-parties-k0-positive-within; metric=A_C; aggregation=count_positive; ideological_universe=all_parties; k=0; election=all
 %   row_at_generation: 10
 %   fields:
 %     value: 5
 %     source_row_count: 6
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PSB; right_endpoint=PTN
 %   row_at_generation: 258
@@ -2757,7 +2791,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 260
 %     A_C: 10.508783851460613
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PTB; right_endpoint=PR
 %   row_at_generation: 259
@@ -2767,7 +2801,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 257
 %     A_C: 11.620538081371619
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=PT DO B; right_endpoint=PSDC
 %   row_at_generation: 260
@@ -2777,7 +2811,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 257
 %     A_C: 6.2665828795721277
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=0; left_endpoint=SOLIDARIEDADE; right_endpoint=PSL
 %   row_at_generation: 261
@@ -2787,7 +2821,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 257
 %     A_C: 6.5862104528808336
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO
 %   row_at_generation: 479
@@ -2797,7 +2831,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 265
 %     A_C: -1.2923532538854881
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=0; left_endpoint=PP; right_endpoint=PL
 %   row_at_generation: 480
@@ -2807,7 +2841,7 @@ compared with 47.59 percent in the primary universe.
 %     seats: 258
 %     A_C: 22.820505594331628
 %     inversion: true
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2014; ideological_universe=all_parties; k=1
 %   row_at_generation: 4
@@ -2815,7 +2849,7 @@ compared with 47.59 percent in the primary universe.
 %     strongest_inversion_coalition: PTB--PR, omitting PPL
 %     strongest_inversion_vote_share: 0.4744616510767348
 %     strongest_inversion_seats: 257
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2018; ideological_universe=all_parties; k=1
 %   row_at_generation: 8
@@ -2823,7 +2857,7 @@ compared with 47.59 percent in the primary universe.
 %     strongest_inversion_coalition: PCdoB--PODE, omitting PSDB
 %     strongest_inversion_vote_share: 0.47823504167693237
 %     strongest_inversion_seats: 257
-% source: processing/Processing/output/paper/tables/ideological_universe_comparison.csv
+% source: build/results/domains/tables/ideological_universe_comparison.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=1
 %   row_at_generation: 12
@@ -2831,7 +2865,7 @@ compared with 47.59 percent in the primary universe.
 %     strongest_inversion_coalition: PP--PL, omitting DC
 %     strongest_inversion_vote_share: 0.4526056142903306
 %     strongest_inversion_seats: 258
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2018; ideological_universe=all_parties; k=0; left_endpoint=PT; right_endpoint=PSDB
 %   row_at_generation: 351
@@ -2850,7 +2884,8 @@ seatless members and has \(A_C=-1.29\) and \(B_C=9.88\). It remains inverted,
 with 49.98 percent of all valid votes and 265 seats.
 
 % PROVENANCE-BEGIN appendix-compact-mdb-uniao
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% note: Compact operands: build/results/manuscript_results.csv; block=appendix-compact-mdb-uniao
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO
 %   row_at_generation: 214
@@ -2861,7 +2896,7 @@ with 49.98 percent of all valid votes and 265 seats.
 %     A_C: 2.9531634698279121
 %     B_C: 9.5534626590043707
 %     inversion: true
-% source: processing/Processing/output/paper/raw/ideology_k_gap_minimal_accounting_both_universes.csv
+% source: build/results/domains/raw/ideology_k_gap_minimal_accounting_both_universes.csv
 % row:
 %   key: election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO
 %   row_at_generation: 479

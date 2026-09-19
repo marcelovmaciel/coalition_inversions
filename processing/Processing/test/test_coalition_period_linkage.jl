@@ -42,29 +42,10 @@ const _PIN_LINKAGE = Processing.CabinetRelease.default_pin_path()
     @test isempty(Processing.coalition_periods_overlapping_window(single, row.end_exclusive, row.end_exclusive))
 end
 
-@testset "Cabinet pin fails closed" begin
-    original = JSON3.read(read(_PIN_LINKAGE, String), Dict{String,Any})
-    mktempdir() do tempdir
-        # Each override is a distinct path so no previously validated cache entry is reused.
-        cases = [
-            ("metadata", pin -> (pin["metadata_sha256"] = repeat("0", 64))),
-            ("schema", pin -> (pin["schema_version"] = 2)),
-            ("cutoff", pin -> (pin["cutoff_exclusive"] = "2026-03-21")),
-            ("version", pin -> (pin["data_version"] = "unreviewed")),
-            ("missing_atomic", pin -> delete!(pin["file_hashes"], "atomic_events.csv")),
-            ("missing_evidence", pin -> delete!(pin["file_hashes"], "evidence.csv")),
-            ("bad_file", pin -> (pin["file_hashes"]["membership.csv"] = repeat("0", 64))),
-            ("missing_primary_assumptions", pin -> delete!(pin["file_hashes"], "primary_assumptions.csv")),
-        ]
-        for (name, mutate!) in cases
-            pin = deepcopy(original); mutate!(pin)
-            path = joinpath(tempdir, name * ".json")
-            write(path, JSON3.write(pin))
-            @test_throws ErrorException Processing.CabinetRelease.load_release(path)
-        end
-        @test_throws ErrorException Processing.CabinetRelease.load_release(joinpath(tempdir, "missing.json"))
-        good = joinpath(tempdir, "valid.json")
-        write(good, JSON3.write(original))
-        @test Processing.CabinetRelease.load_release(good).metadata.data_version == original["data_version"]
-    end
+@testset "Cabinet input boundary" begin
+    @test_throws ErrorException Processing.CabinetRelease.calendar_table("historical-release.json")
+    @test Processing.CabinetRelease.validate_parties(["B", "A"]; election_year=2022,
+        valid_election_parties=["A", "B", "C"]) == ["A", "B"]
+    @test_throws ErrorException Processing.CabinetRelease.validate_parties(["UNKNOWN"];
+        election_year=2022, valid_election_parties=["A", "B"])
 end

@@ -21,8 +21,8 @@ from statistics import mean, median
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
-PAPER = ROOT / "processing/Processing/output/paper"
-DECOMP = ROOT / "processing/Processing/output/decomposition"
+PAPER = ROOT / "build/results/domains"
+DECOMP = ROOT / "build/results/accounting"
 MANUSCRIPT = ROOT / "writing/submission_inversions_review/manuscript/main_rw_again.tex"
 YEARS = (2014, 2018, 2022)
 ATOL = 1e-10
@@ -292,7 +292,7 @@ def validate_registry(data):
         require(chosen["coalition"] == expected["strongest_inversion_coalition"], "strongest-case registry")
     # Match the existing coalition A/B decomposition by exact party set.
     old = {(int(r["election_year"]), frozenset(parties(r["coalition_parties"]))): r
-           for r in read(PAPER / "all_parties/raw/accounting_all_inversion_decomposition.csv")}
+           for r in read(DECOMP / "all_parties/raw/accounting_all_inversion_decomposition.csv")}
     for c in cases:
         if c["is_main_focal"]:
             r = old[c["election"], frozenset(c["members"])]
@@ -401,8 +401,6 @@ def export_and_check(stage, data, cases, members):
             source["csv_member_sum_residual_" + comp] = residual
         close(float(c["d_C"]), math.fsum(float(c[k]) for k in ("A_C", "B_C")), "exported coalition d=A+B", "csv")
     write_csv(stage / "inversion_AB_summary.csv", summaries)
-    shutil.copyfile(stage / "party_components_all_years.csv", stage / "party_AB_by_year.csv")
-    shutil.copyfile(stage / "inversion_party_components.csv", stage / "inversion_party_AB.csv")
     return pp
 
 
@@ -436,113 +434,6 @@ def assign_codes(cases):
             continue
         c["report_code"] = mapping.get((c["election"], c["coalition"]),
                                       f"G{str(c['election'])[2:]}" if c["is_strongest_k1"] else "")
-
-
-def report(data, cases, member_rows, provenance_digest):
-    """Generate scope, all current focal vectors and sensitivity from computed rows."""
-    focal = sorted((c for c in cases if c["is_main_focal"]), key=lambda c: c["report_code"])
-    cabinets = [c for c in cases if c["domain"] == "cabinet"]
-    k0 = [c for c in cases if c["k"] == 0]
-    k1 = [c for c in cases if c["k"] == 1]
-    calendar = read(PAPER / "raw/cabinet_calendar_status.csv")
-    unidentified = [r for r in calendar if not truth(r["identified"])]
-    unknown_days = sum(int(r["days"]) for r in unidentified)
-    out = ["# Party components and coalition inversions", "## Scope and definitions"]
-    put = out.append
-    put(f"The current sample contains {len(cabinets)} inverted cabinet party sets, "
-        f"{len(k0)} minimal connected (k=0) ideological inversions and {len(k1)} at-most-one-gap (k=1) minimal inversions. "
-        "This standalone diagnostic retains its original **all-party ideological sensitivity**, including zero-seat parties. "
-        "The manuscript's primary seat-winning ideological baseline is generated separately and is unchanged.")
-    daily = read(ROOT / "generated/cabinet_v5/cabinet_analysis_daily.csv")
-    provisional_days = sum(truth(r["provisional_day"]) for r in daily)
-    inversion_days = sum(truth(r["inversion_status"]) for r in daily)
-    put(f"Cabinet history comes from the pinned contemporaneous-affiliation release. "
-        f"There are {CHECKS['cabinet_party_sets']} distinct election-year cabinet party sets, "
-        f"observed on {len(daily):,} dates ({len(daily)-provisional_days:,} established and {provisional_days} provisional). "
-        f"The inverted sets occupy {inversion_days} days. "
-        "UNKNOWN historical affiliations remain UNKNOWN; provisional primary assumptions add no party. "
-        "Set counts are unweighted. Actual intervals, evidence status and date-level sensitivities remain linked separately.")
-    put(r"For each party, $q_i=S v_i/V$, $d_i=s_i-q_i$, $R_i=s_i/q_i$, "
-        r"$A_i=\sum_d(s_{id}-S_dv_{id}/V_d)$ and $B_i=\sum_d S_dv_{id}/V_d-Sv_i/V$. "
-        r"All components are in seats. The exact checks require $d_i=A_i+B_i$, "
-        r"$A_C=\sum_{i\in C}A_i$, $B_C=\sum_{i\in C}B_i$ and $d_C=A_C+B_C$. "
-        "The denominator includes every valid party vote, and the national seat total remains 513.")
-    put("These are descriptive accounting contributions. The 2014/2018 joint-list allocations and 2022 federation allocations "
-        "are attributed ex post to parties; the components do not identify a party-specific causal effect. "
-        "Ratios with a zero quota are unavailable.")
-    put("## Validation and provenance")
-    put(f"The maintained Julia decomposition supplies the complete district-party panel. "
-        f"This diagnostic independently sums integer district votes/seats with rational arithmetic, checks every selected member vector "
-        f"and deletion, and verifies domain-relative minimality against all winning proper subsets. "
-        f"All {CHECKS['domain_rows']:,} all-party k=0/k=1 registry rows and {CHECKS['cabinet_party_sets']} cabinet party sets passed. "
-        f"The maximum saved-accounting discrepancy is {MAX_RESIDUAL['baseline']:.2e}; the maximum serialized closure discrepancy is "
-        f"{MAX_RESIDUAL['csv']:.2e}, against an absolute tolerance of 1e-10 and zero relative tolerance.")
-    put(f"Input/code provenance SHA-256: `{provenance_digest}`. The manuscript source is preserved at SHA-256 `{hash_file(MANUSCRIPT)}`.")
-    put("## Party component sign profiles")
-    sign_rows = []
-    for year in YEARS:
-        pp = list(data[year]["parties"].values())
-        counts = Counter(p["component_pattern"] for p in pp)
-        sign_rows.append([year, len(pp), *[counts[k] for k in ("A+ B+", "A+ B-", "A- B+", "A- B-")],
-                          sum(p["substantial_offset"] for p in pp)])
-    put(md_table(["Election", "Parties", "A+ B+", "A+ B-", "A- B+", "A- B-", "Substantial offsets"], sign_rows))
-    put("## Current focal coalitions")
-    if not cabinets:
-        put("No identified cabinet composition satisfies the inversion criterion. Unidentified intervals remain unclassified.")
-    put(md_table(["Code", "Election", "Domain", "Period/interval", "Days", "Vote %", "Seats", "A_C", "B_C", "d_C", "Members"],
-        [[c['report_code'], c['election'], c['domain'], c['period_ranges'] or c['coalition'], c['period_days'],
-          fmt(100*c['vote_share'], 4), c['seats'], fmt(c['A_C']), fmt(c['B_C']), fmt(c['d_C']),
-          '; '.join(c['members'])] for c in focal]))
-    put("### Gross component contributions")
-    share = lambda value: "unavailable" if value == "" else fmt(100*value, 1) + "%"
-    put(md_table(["Code", "Component", "Gross positive", "Gross negative (signed)", "Top two positive", "Share", "Top two negative", "Share"],
-        [[c['report_code'], comp, fmt(c[f'gross_positive_{comp}']), fmt(c[f'gross_negative_{comp}']),
-          c[f'top_two_positive_{comp}_parties'] or 'None', share(c[f'top_two_positive_{comp}_share']),
-          c[f'top_two_negative_{comp}_parties'] or 'None', share(c[f'top_two_negative_{comp}_share'])]
-         for c in focal for comp in ('A', 'B', 'd')]))
-    put("### Complete member vectors")
-    put("Every focal coalition and each strongest k=1 case has its complete member vector below. "
-        "A party's components stay fixed within an election; only the membership selector changes.")
-    for c in sorted((c for c in cases if c['focal']), key=lambda c: (c['election'], c['report_code'])):
-        put(f"**{c['report_code']}: {c['election']} {c['coalition']}**")
-        values = [[p] + [fmt(data[c['election']]['parties'][p][component], 12)
-                         for component in ('A_i','B_i','d_i')] for p in c['members']]
-        values.append(['Total'] + [fmt(c[component], 12) for component in ('A_C','B_C','d_C')])
-        put(md_table(['Party','A_i','B_i','d_i'], values))
-        for comp in ('A','B','d'):
-            close(math.fsum(float(fmt(data[c['election']]['parties'][p][comp+'_i'],12)) for p in c['members']),
-                  float(fmt(c[comp+'_C'],12)), f"displayed focal member sum {c['inversion_id']}/{comp}", 'report')
-    put("### Leave-one-party-out configurations")
-    put("Every deletion is recomputed directly from district inputs. A deletion can leave the original ideological domain, "
-        "so preservation of an inversion is not a contradiction of domain-relative minimality.")
-    deletion_rows=[]
-    for c in focal:
-        pp=[r for r in member_rows if r['inversion_id']==c['inversion_id']]
-        deletion_rows.append([c['report_code'], ', '.join(r['party'] for r in pp if r['loo_inversion']) or 'None',
-                              f"{sum(r['seat_pivotal'] for r in pp)}/{len(pp)}"])
-    put(md_table(['Code','Deletions preserving inversion','Seat-pivotal members'], deletion_rows))
-    put("## All-party one-gap sensitivity")
-    put("The k=1 domain permits at most one missing interior party. Strongest follows the maintained criterion: "
-        "lowest vote share within election, then fewer parties, then canonical coalition ID.")
-    gap_rows=[]
-    for year in YEARS:
-        pool=[c for c in k1 if c['election']==year]
-        patterns=Counter(c['classification'] for c in pool)
-        gap_rows.append([year,len(pool),patterns[R],patterns[W],patterns[B]] +
-            [f"{fmt(median(c[comp] for c in pool))} [{fmt(min(c[comp] for c in pool))}, {fmt(max(c[comp] for c in pool))}]"
-             if pool else 'unavailable' for comp in ('A_C','B_C')])
-    put(md_table(['Election','Cases','Reinforcement','Within-led offset','Between-led offset','A: median [min,max]','B: median [min,max]'],gap_rows))
-    put(f"All displayed 12-decimal member sums pass at 1e-10; maximum residual {MAX_RESIDUAL['report']:.2e} seats. "
-        "No residual is assigned to a party to force displayed closure.")
-    put("## Files and regeneration")
-    put(f"`party_components_all_years.csv` and its alias `party_AB_by_year.csv` contain {sum(len(data[y]['parties']) for y in YEARS)} party-elections. "
-        f"`inversion_AB_summary.csv` contains {len(cases)} configurations; `inversion_party_components.csv` and its alias "
-        f"`inversion_party_AB.csv` contain {len(member_rows)} complete case-party rows, including all deletion diagnostics. "
-        "The two report Markdown files are identical. `party_AB_scatter.pdf`/PNG use the unchanged party-level numerical panel.")
-    put("Rebuild with `python3 processing/Processing/decomposition/party_AB_diagnostic.py` after the normal Julia decomposition, "
-        "or use `processing/rebuild_manuscript.sh --freeze-prose` for the complete integrated workflow. "
-        "The default consumes the already-validated complete accounting panel and pinned cabinet release; it does not download electoral or cabinet inputs.")
-    return '\n\n'.join(out)+'\n'
 
 
 def make_figure(stage, data):
@@ -598,18 +489,12 @@ def make_figure(stage, data):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--panel',type=Path,help='Reuse a primitive panel previously exported by export_party_AB_panel.jl (development only).')
-    parser.add_argument('--output-dir',type=Path,default=ROOT)
+    parser.add_argument('--output-dir',type=Path,default=ROOT/'build/validation/party_AB')
     args=parser.parse_args()
-    pin_path = ROOT/'processing/Processing/data/cabinet_release_pin.json'
-    pin = json.loads(pin_path.read_text())
-    release = ROOT/pin['release_path']
-    require(hash_file(release/'metadata.json') == pin['metadata_sha256'], 'pinned metadata hash')
-    meta = json.loads((release/'metadata.json').read_text())
-    require(meta['data_version'] == pin['data_version'], 'pinned release version')
-    require(pin['cutoff_exclusive'] == '2026-03-20', 'paper coverage cutoff')
-    for name, expected in pin['file_hashes'].items():
-        require(hash_file(release/name) == expected, 'pinned release file ' + name)
-    protected={p:hash_file(p) for p in MANUSCRIPT.parent.glob('*.tex')}
+    import sys
+    sys.path.insert(0,str(ROOT/'processing'))
+    from cabinet_contract import require_current_outputs, RELEASE, PIN
+    release=require_current_outputs()
     with tempfile.TemporaryDirectory(prefix='party_AB_') as tmp:
         stage=Path(tmp)
         panel=args.panel
@@ -628,35 +513,17 @@ def main():
         for row in members:
             row['report_code'] = code_by_id[row['inversion_id']]
         export_and_check(stage,data,cases,members)
-        inputs=[HERE/'party_AB_diagnostic.py',HERE/'export_party_AB_panel.jl',HERE/'CoalitionDecomposition.jl',
-                DECOMP/'raw/party_accounting_all_years.csv',PAPER/'raw/party_seat_differentials_all_years.csv',
-                PAPER/'raw/ideology_k_gap_coalitions_all_parties.csv',PAPER/'raw/cabinet_party_sets.csv',
-                PAPER/'all_parties/raw/accounting_all_inversion_decomposition.csv',PAPER/'tables/ideology_k_gap_summary_all_parties.csv']
-        inputs += [ROOT/f'data/raw/electionsBR/{year}/{name}.csv' for year in YEARS for name in ('party_mun_zone','candidate','seats')]
-        inputs += list((ROOT/'processing/Processing/data').glob('*.csv'))
-        inputs += list((ROOT/'processing/Processing/src').glob('*.jl'))
-        inputs += [PAPER/f'raw/ideology_order_{year}_all_parties.csv' for year in YEARS]
-        inputs += [PAPER/'raw/cabinet_calendar_status.csv', PAPER/'raw/cabinet_unidentified_intervals.csv',
-                   ROOT/'generated/cabinet_v5/cabinet_analysis_daily.csv',
-                   DECOMP/'raw/party_district_accounting_all_years.csv',
-                   ROOT/'processing/Processing/data/cabinet_release_pin.json']
-        digest=hashlib.sha256(''.join(f'{p.relative_to(ROOT)} {hash_file(p)}\n' for p in sorted(inputs)).encode()).hexdigest()
         make_figure(stage,data)
-        content=report(data,cases,members,digest)
-        (stage/'party_component_report.md').write_text(content,encoding='utf-8')
-        shutil.copyfile(stage/'party_component_report.md',stage/'party_AB_report.md')
-        require(all(hash_file(p)==h for p,h in protected.items()),'manuscript .tex files changed during diagnostic')
         args.output_dir.mkdir(parents=True,exist_ok=True)
-        names=['party_components_all_years.csv','party_AB_by_year.csv','inversion_party_components.csv',
-               'inversion_party_AB.csv','inversion_AB_summary.csv','party_component_report.md','party_AB_report.md',
+        names=['party_components_all_years.csv','inversion_party_components.csv',
+               'inversion_AB_summary.csv',
                'party_AB_scatter.png','party_AB_scatter.pdf']
-        validation = dict(release_version=pin['data_version'], release_metadata_sha256=pin['metadata_sha256'],
+        validation = dict(release_version=release['metadata']['release_version'], release_metadata_sha256=release['metadata_sha256'],
                           ideological_universe='all_parties (original standalone sensitivity)',
                           party_years=sum(len(data[y]['parties']) for y in YEARS), configurations=len(cases),
                           main_focal=sum(c['is_main_focal'] for c in cases), k1_minimal=sum(c['k']==1 for c in cases),
                           member_rows=len(members), checks=dict(CHECKS), max_residual=dict(MAX_RESIDUAL),
-                          manuscript_sha256=hash_file(MANUSCRIPT), input_code_digest=digest,
-                          output_sha256={name: hash_file(stage/name) for name in names})
+                          scope='Independent exact accounting, complete domain minimality and member deletion checks')
         (stage/'party_AB_validation.json').write_text(json.dumps(validation, indent=2) + '\n')
         names.append('party_AB_validation.json')
         for name in names:

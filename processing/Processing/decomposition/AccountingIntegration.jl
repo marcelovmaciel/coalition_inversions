@@ -11,16 +11,9 @@ const CD = CoalitionDecomposition
 const Rat = Rational{BigInt}
 
 export focal_case_specs,
-       FEDERATION_SETS_2022,
        build_district_electoral_weight,
        build_accounting_integration,
        write_accounting_integration_outputs
-
-const FEDERATION_SETS_2022 = [
-    (federation = "FE BRASIL", parties = ["PT", "PCdoB", "PV"]),
-    (federation = "PSOL-REDE", parties = ["PSOL", "REDE"]),
-    (federation = "PSDB-CIDADANIA", parties = ["PSDB", "CIDADANIA"]),
-]
 
 const SELECTED_PARTIES_BY_YEAR = Dict(
     2014 => ["PMDB", "PSD", "PT", "PSDB"],
@@ -164,30 +157,15 @@ election accounting. This common path is used for baseline cases, focal-case
 selection, and manuscript-facing diagnostics.
 """
 function build_exact_case(accounting, parties::Vector{String}, metadata)
-    length(parties) == length(unique(parties)) || error(
-        "$(metadata.case_id): duplicate coalition parties.",
-    )
-    party_lookup = Dict(String(row.party) => row for row in eachrow(accounting.party))
-    missing_parties = setdiff(Set(parties), Set(keys(party_lookup)))
-    isempty(missing_parties) || error(
-        "$(metadata.case_id): parties absent from election accounting: " *
-        join(sort(collect(missing_parties)), ", "),
-    )
-
+    values_C = CD.coalition_accounting(accounting, parties; include_districts=true)
+    party_lookup = Dict(String(row.party) => row for row in eachrow(values_C.members))
     member_rows = [party_lookup[party] for party in parties]
     coalition_parties = join(parties, ", ")
     base = component_metadata(metadata, coalition_parties)
-    v_C = sum(Int(row.votes) for row in member_rows)
-    s_C = sum(Int(row.seats) for row in member_rows)
-    q_exact = CD.exact_product_ratio(accounting.national_seats, v_C, accounting.national_votes)
-    d_exact = exact_fraction(s_C) - q_exact
-    r_exact = exact_fraction(accounting.seat_majority_threshold) - q_exact
-    A_exact = sum(row.A_exact for row in member_rows)
-    B_exact = sum(row.B_exact for row in member_rows)
-    A_exact + B_exact == d_exact || error(
-        "$(metadata.case_id): exact A_C + B_C != d_C.",
-    )
-    R_exact = s_C == 0 ? exact_fraction(0) : exact_fraction(s_C) / q_exact
+    v_C, s_C = values_C.votes, values_C.seats
+    q_exact, d_exact, r_exact = values_C.q, values_C.d, values_C.r
+    A_exact, B_exact = values_C.A, values_C.B
+    R_exact = values_C.R
     A_minus_r_exact = A_exact - r_exact
     d_minus_r_exact = d_exact - r_exact
     seat_margin_exact = exact_fraction(s_C - accounting.seat_majority_threshold)
@@ -219,33 +197,14 @@ function build_exact_case(accounting, parties::Vector{String}, metadata)
         )))
     end
 
-    party_set = Set(parties)
     state_rows = NamedTuple[]
     cell_rows = NamedTuple[]
-    for district in sort(unique(String.(accounting.panel.district)))
-        district_panel = accounting.panel[
-            (String.(accounting.panel.district) .== district) .&
-            in.(String.(accounting.panel.party), Ref(party_set)),
-            :,
-        ]
-        length(unique(String.(district_panel.party))) == length(parties) || error(
-            "$(metadata.case_id)/$(district): incomplete coalition cell vector.",
-        )
-        V_d = Int(first(district_panel.district_votes))
-        S_d = Int(first(district_panel.district_seats))
-        v_Cd = sum(Int.(district_panel.votes))
-        s_Cd = sum(Int.(district_panel.seats))
-        within_exact = CD.exact_product_ratio(S_d, v_Cd, V_d)
-        national_exact = CD.exact_product_ratio(accounting.national_seats, v_Cd, accounting.national_votes)
-        a_exact = sum(district_panel.a_exact)
-        b_exact = sum(district_panel.b_exact)
+    for values in values_C.districts
+        district = values.district
+        v_Cd, s_Cd, V_d, S_d = values.v_Cd, values.s_Cd, values.V_d, values.S_d
+        within_exact, national_exact = values.within_quota_exact, values.national_contribution_exact
+        a_exact, b_exact = values.a_exact, values.b_exact
         d_state_exact = a_exact + b_exact
-        a_exact == exact_fraction(s_Cd) - within_exact || error(
-            "$(metadata.case_id)/$(district): state A identity failed.",
-        )
-        b_exact == within_exact - national_exact || error(
-            "$(metadata.case_id)/$(district): state B identity failed.",
-        )
         push!(state_rows, merge(base, (
             electoral_unit = district,
             v_Cd = v_Cd,
@@ -318,14 +277,13 @@ function build_exact_case(accounting, parties::Vector{String}, metadata)
         B_C = Float64(B_exact),
         d_C = Float64(d_exact),
         r_C = Float64(r_exact),
-        R_C = Float64(R_exact),
+        R_C = ismissing(R_exact) ? missing : Float64(R_exact),
         A_minus_r_C = Float64(A_minus_r_exact),
         d_minus_r_C = Float64(d_minus_r_exact),
         seat_margin = s_C - accounting.seat_majority_threshold,
-        vote_majority = v_C * 2 > accounting.national_votes,
-        seat_majority = s_C >= accounting.seat_majority_threshold,
-        coalition_inversion = v_C * 2 < accounting.national_votes &&
-            s_C >= accounting.seat_majority_threshold,
+        vote_majority = values_C.status.vote_majority,
+        seat_majority = values_C.status.seat_majority,
+        coalition_inversion = values_C.status.coalition_inversion,
         A_accounting_sufficient = A_exact >= r_exact,
         positive_B_required = d_exact >= r_exact && A_exact < r_exact && B_exact > 0,
         component_sign_pattern = component_sign_pattern(A_exact, B_exact),
@@ -335,7 +293,7 @@ function build_exact_case(accounting, parties::Vector{String}, metadata)
         B_C_exact = exact_text(B_exact),
         d_C_exact = exact_text(d_exact),
         r_C_exact = exact_text(r_exact),
-        R_C_exact = exact_text(R_exact),
+        R_C_exact = ismissing(R_exact) ? missing : exact_text(R_exact),
         A_minus_r_C_exact = exact_text(A_minus_r_exact),
         d_minus_r_C_exact = exact_text(d_minus_r_exact),
         seat_margin_exact = exact_text(seat_margin_exact),
@@ -827,112 +785,6 @@ function build_focal_outputs(registry::DataFrame, accounting_by_year::AbstractDi
     return focal
 end
 
-function federation_close(parties::Vector{String})
-    closed = copy(parties)
-    added = String[]
-    touched = String[]
-    for spec in FEDERATION_SETS_2022
-        isempty(intersect(Set(closed), Set(spec.parties))) && continue
-        push!(touched, spec.federation)
-        for party in spec.parties
-            party in closed && continue
-            push!(closed, party)
-            push!(added, party)
-        end
-    end
-    return closed, added, touched
-end
-
-function majority_classification(row)
-    vote_majority = Bool(row.vote_majority)
-    seat_majority = Bool(row.seat_majority)
-    !vote_majority && seat_majority && return "coalition inversion"
-    vote_majority && seat_majority && return "vote-and-seat majority"
-    vote_majority && !seat_majority && return "vote majority without seat majority"
-    return "neither majority"
-end
-
-function build_federation_outputs(
-    registry::DataFrame,
-    accounting_by_year::AbstractDict,
-    by_id,
-)
-    outputs = Any[]
-    comparison_rows = NamedTuple[]
-    selected = registry[(registry.election_year .== 2022) .&
-        ((registry.case_domain .== "cabinet") .| coalesce.(registry.minimal_inversion, false)), :]
-    for (closure_order, case_id) in enumerate(String.(selected.case_id))
-        row = registry_row(registry, case_id)
-        Int(row.election_year) == 2022 || error("Federation closure is restricted to 2022.")
-        baseline = by_id[case_id].total
-        parties = ordered_parties(row.coalition_parties)
-        closed, added, touched = federation_close(parties)
-        base_meta = baseline_metadata(
-            row,
-            findfirst(==(case_id), String.(registry.case_id)),
-        )
-        metadata = merge(base_meta, (
-            case_id = "$(case_id)/federation-closed",
-            baseline_case_id = case_id,
-            source_case_id = String(row.source_case_id),
-            source_case_ids = case_id,
-            analysis_variant = "federation_closure",
-            case_order = closure_order,
-            focal_order = missing,
-            case_label = "$(row.case_label), federation-closed",
-            case_display = "$(baseline.case_display) (federation-closed)",
-            main_text_focal = false,
-            shared_numerical_vector = false,
-            numerical_vector_group = "$(case_id)/federation-closed",
-        ))
-        output = build_exact_case(accounting_by_year[2022], closed, metadata)
-        push!(outputs, output)
-
-        push!(comparison_rows, (
-            comparison_order = closure_order,
-            baseline_case_id = case_id,
-            case_domain = String(row.case_domain),
-            election_year = 2022,
-            case_display = String(baseline.case_display),
-            baseline_parties = String(baseline.coalition_parties),
-            federation_closed_parties = String(output.total.coalition_parties),
-            touched_federations = isempty(touched) ? "none" : join(touched, ", "),
-            added_parties = isempty(added) ? "none" : join(added, ", "),
-            closure_changed = !isempty(added),
-            baseline_vote_share_pct = Float64(baseline.vote_share_pct),
-            baseline_seats = Int(baseline.s_C),
-            baseline_q_C = Float64(baseline.q_C),
-            baseline_r_C = Float64(baseline.r_C),
-            baseline_A_C = Float64(baseline.A_C),
-            baseline_B_C = Float64(baseline.B_C),
-            baseline_d_C = Float64(baseline.d_C),
-            baseline_classification = majority_classification(baseline),
-            closed_vote_share_pct = Float64(output.total.vote_share_pct),
-            closed_seats = Int(output.total.s_C),
-            closed_q_C = Float64(output.total.q_C),
-            closed_r_C = Float64(output.total.r_C),
-            closed_A_C = Float64(output.total.A_C),
-            closed_B_C = Float64(output.total.B_C),
-            closed_d_C = Float64(output.total.d_C),
-            closed_classification = majority_classification(output.total),
-            inversion_survives = Bool(output.total.coalition_inversion),
-            baseline_q_C_exact = String(baseline.q_C_exact),
-            baseline_r_C_exact = String(baseline.r_C_exact),
-            baseline_A_C_exact = String(baseline.A_C_exact),
-            baseline_B_C_exact = String(baseline.B_C_exact),
-            baseline_d_C_exact = String(baseline.d_C_exact),
-            closed_q_C_exact = String(output.total.q_C_exact),
-            closed_r_C_exact = String(output.total.r_C_exact),
-            closed_A_C_exact = String(output.total.A_C_exact),
-            closed_B_C_exact = String(output.total.B_C_exact),
-            closed_d_C_exact = String(output.total.d_C_exact),
-        ))
-    end
-
-    federation = stack_case_outputs(outputs)
-    comparison = DataFrame(comparison_rows)
-    return federation, comparison
-end
 sum_exact(values) = foldl(+, values; init = exact_fraction(0))
 
 function signed_extreme(values, units, positive::Bool)
@@ -1380,191 +1232,9 @@ function sha256_file(path::AbstractString)
     end
 end
 
-function focal_case_latex(data::DataFrame)
-    lines = String[
-        "\\begin{table}[htbp]",
-        "\\centering",
-        "\\caption{Accounting components for selected focal coalition vectors}",
-        "\\label{tab:accounting-focal-cases}",
-        "\\scriptsize",
-        "\\setlength{\\tabcolsep}{3.0pt}",
-        "\\begin{tabularx}{\\textwidth}{@{}lXrrrrrL{1.4cm}@{}}",
-        "\\toprule",
-        "Domain & Election/case & Vote \\% & Seats & \\(d_C\\) & \\(A_C\\) & \\(B_C\\) & Pattern \\\\",
-        "\\midrule",
-    ]
-    for row in eachrow(sort(data, :focal_order))
-        domain = row.case_domain == "cabinet" ? "Cabinet" : "Ideological"
-        displayed = closure_preserving_display(row.d_C, row.A_C)
-        push!(
-            lines,
-            "$(domain) & $(latex_escape(row.case_display)) & $(fmtpct(row.vote_share_pct)) & " *
-            "$(row.s_C) & $(displayed.d_C) & $(displayed.A_C) & $(displayed.B_C) & " *
-            "$(latex_escape(row.component_sign_pattern)) \\\\",
-        )
-    end
-    append!(lines, [
-        "\\bottomrule",
-        "\\end{tabularx}",
-        "\\begin{minipage}{0.96\\linewidth}",
-        "\\footnotesize Notes: Cabinet rows include each distinct election-year party set satisfying the inversion criterion once; occurrence linkage is separate. The ideological rows are focal endpoint-minimal cases; all minimal connected ideological inversions are reported in Table~\\ref{tab:minimal-intervals}. The identities are descriptive, not causal.",
-        "\\end{minipage}",
-        "\\end{table}",
-    ])
-    return join(lines, "\n")
-end
 
-function gross_components_latex(data::DataFrame)
-    selected = data[in.(String.(data.component), Ref(Set(["A", "B"]))), :]
-    sort!(selected, [:focal_order, :aggregation_level, :component])
-    lines = String[
-        "\\begin{landscape}",
-        "\\begingroup",
-        "\\scriptsize",
-        "\\setlength{\\tabcolsep}{2.8pt}",
-        "\\begin{longtable}{L{4.3cm}llrrrrL{2.0cm}rL{2.0cm}rr}",
-        "\\caption{Gross positive and negative accounting components for focal cases}\\label{tab:accounting-gross-components} \\\\",
-        "\\toprule",
-        "Case & Level & Term & Gross + & Gross - & Net & Cancel. & Largest + & Value & Largest - & Value & HHI \\\\",
-        "\\midrule",
-        "\\endfirsthead",
-        "\\multicolumn{12}{l}{\\footnotesize Gross accounting components (continued)} \\\\",
-        "\\toprule",
-        "Case & Level & Term & Gross + & Gross - & Net & Cancel. & Largest + & Value & Largest - & Value & HHI \\\\",
-        "\\midrule",
-        "\\endhead",
-        "\\midrule",
-        "\\multicolumn{12}{r}{\\footnotesize Continued on next page} \\\\",
-        "\\endfoot",
-        "\\bottomrule",
-        "\\endlastfoot",
-    ]
-    for row in eachrow(selected)
-        push!(
-            lines,
-            "$(latex_escape(row.case_display)) & $(latex_escape(row.aggregation_level)) & " *
-            "\\($(row.component)\\) & $(fmt2(row.gross_positive)) & " *
-            "$(fmt2(row.gross_negative_magnitude)) & $(fmt2(row.net_component)) & " *
-            "$(fmtshare(row.cancellation_share)) & $(latex_escape(row.largest_positive_unit)) & " *
-            "$(fmt2(row.largest_positive_value)) & $(latex_escape(row.largest_negative_unit)) & " *
-            "$(fmt2(row.largest_negative_value)) & $(fmtshare(row.absolute_hhi)) \\\\",
-        )
-    end
-    append!(lines, [
-        "\\end{longtable}",
-        "\\noindent\\footnotesize\\textit{Notes:} Gross - is the magnitude of negative entries. Cancel. is one minus the absolute net divided by the gross absolute total. HHI is the Herfindahl index of absolute contributions, reported as a percentage for compactness. Underlying unrounded party and state vectors close exactly to the unrounded net; displayed entries are independently rounded.",
-        "\\endgroup",
-        "\\end{landscape}",
-    ])
-    return join(lines, "\n")
-end
 
-function selected_party_geography_latex(data::DataFrame)
-    lines = String[
-        "\\begin{landscape}",
-        "\\begingroup",
-        "\\scriptsize",
-        "\\setlength{\\tabcolsep}{3.0pt}",
-        "\\begin{longtable}{rlrrrrrrlrlr}",
-        "\\caption{Selected party differentials and between-state geography}\\label{tab:accounting-party-geography} \\\\",
-        "\\toprule",
-        "Year & Party & Vote \\% & Seats & \\(A_i\\) & \\(B_i\\) & \\(d_i\\) & Gross \\(B\\) & Top + & Value & Top - & Value \\\\",
-        "\\midrule",
-        "\\endfirsthead",
-        "\\multicolumn{12}{l}{\\footnotesize Selected party geography (continued)} \\\\",
-        "\\toprule",
-        "Year & Party & Vote \\% & Seats & \\(A_i\\) & \\(B_i\\) & \\(d_i\\) & Gross \\(B\\) & Top + & Value & Top - & Value \\\\",
-        "\\midrule",
-        "\\endhead",
-        "\\midrule",
-        "\\multicolumn{12}{r}{\\footnotesize Continued on next page} \\\\",
-        "\\endfoot",
-        "\\bottomrule",
-        "\\endlastfoot",
-    ]
-    for row in eachrow(sort(data, :selected_order))
-        gross = "$(fmt2(row.gross_positive_B))/$(fmt2(row.gross_negative_B_magnitude))"
-        push!(
-            lines,
-            "$(row.election_year) & $(latex_escape(row.party)) & $(fmt2(row.vote_share_pct)) & " *
-            "$(row.s_i) & $(fmt2(row.A_i)) & $(fmt2(row.B_i)) & $(fmt2(row.d_i)) & " *
-            "$(gross) & $(latex_escape(row.largest_positive_B_state)) & " *
-            "$(fmt2(row.largest_positive_b_id)) & $(latex_escape(row.largest_negative_B_state)) & " *
-            "$(fmt2(row.largest_negative_b_id)) \\\\",
-        )
-    end
-    append!(lines, [
-        "\\end{longtable}",
-        "\\noindent\\footnotesize\\textit{Notes:} Gross \\(B\\) reports positive/negative-magnitude state totals. Top + and Top - identify the largest state contributions to \\(B_i\\). Underlying unrounded values satisfy \\(A_i+B_i=d_i\\); displayed values are independently rounded. Party entries are ex post accounting attributions; they do not identify causal responsibility.",
-        "\\endgroup",
-        "\\end{landscape}",
-    ])
-    return join(lines, "\n")
-end
 
-function federation_closure_latex(data::DataFrame)
-    lines = String[
-        "\\begin{landscape}",
-        "\\begin{table}[p]",
-        "\\centering",
-        "\\caption{2022 federation-closure sensitivity}",
-        "\\label{tab:accounting-federation-closure}",
-        "\\scriptsize",
-        "\\setlength{\\tabcolsep}{3.0pt}",
-        "\\begin{tabular}{L{4.4cm}L{2.8cm}rrL{3.4cm}rrL{3.4cm}}",
-        "\\toprule",
-        "Baseline case & Added parties & Base vote \\% & Seats & Base classification & Closed vote \\% & Seats & Closed classification \\\\",
-        "\\midrule",
-    ]
-    for row in eachrow(sort(data, :comparison_order))
-        push!(
-            lines,
-            "$(latex_escape(row.case_display)) & $(latex_escape(row.added_parties)) & " *
-            "$(fmt2(row.baseline_vote_share_pct)) & $(row.baseline_seats) & " *
-            "$(latex_escape(row.baseline_classification)) & $(fmt2(row.closed_vote_share_pct)) & " *
-            "$(row.closed_seats) & $(latex_escape(row.closed_classification)) \\\\",
-        )
-    end
-    append!(lines, [
-        "\\bottomrule",
-        "\\end{tabular}",
-        "\\begin{minipage}{0.94\\linewidth}",
-        "\\footnotesize Notes: Closure adds all members of any 2022 electoral federation represented by at least one baseline coalition member, then recomputes votes, seats, and exact accounting terms. Cabinet-party membership remains the baseline substantive object.",
-        "\\end{minipage}",
-        "\\end{table}",
-        "\\end{landscape}",
-    ])
-    return join(lines, "\n")
-end
-
-function minimal_ideological_latex(data::DataFrame)
-    all(Bool.(data.minimal_inversion)) || error(
-        "Endpoint-minimal ideological presentation contains a nonminimal case.",
-    )
-
-    lines = String[
-        "\\begin{tabular}{@{}lllrrrrrr@{}}",
-        "\\toprule",
-        "Election & Start & End & Parties & Vote \\% & Seats & \\(d_C\\) & \\(A_C\\) & \\(B_C\\) \\\\",
-        "\\midrule",
-    ]
-    ordered = sort(data, [:election_year, :ideology_start_index, :ideology_end_index])
-    for row in eachrow(ordered)
-        displayed = closure_preserving_display(row.d_C, row.A_C)
-        push!(
-            lines,
-            "$(row.election_year) & $(latex_escape(row.start_party)) & " *
-            "$(latex_escape(row.end_party)) & $(row.coalition_party_count) & " *
-            "$(fmt2(row.vote_share_pct)) & $(row.s_C) & $(displayed.d_C) & " *
-            "$(displayed.A_C) & $(displayed.B_C) \\\\",
-        )
-    end
-    append!(lines, [
-        "\\bottomrule",
-        "\\end{tabular}",
-    ])
-    return join(lines, "\n")
-end
 
 function contributor_entry(row, party_field::Symbol, value_field::Symbol)
     party = row[party_field]
@@ -1586,68 +1256,6 @@ function two_contributor_entries(
     return "$(first_entry); $(second_entry)"
 end
 
-function coalition_party_contribution_latex(data::DataFrame)
-    all(Bool.(data.exact_closure_pass)) || error(
-        "Party-contribution appendix contains a case that does not close exactly.",
-    )
-
-    lines = String[
-        "\\begin{table}[htbp]",
-        "\\centering",
-        "\\caption{Party contributions to coalition differentials}",
-        "\\label{tab:coalition-party-contributions}",
-        "\\footnotesize",
-        "\\setlength{\\tabcolsep}{3.5pt}",
-        "\\renewcommand{\\arraystretch}{1.08}",
-        "\\begin{tabularx}{\\textwidth}{@{}L{0.245\\textwidth}rrr>{\\raggedright\\arraybackslash}X>{\\raggedright\\arraybackslash}X@{}}",
-        "\\toprule",
-        "Case & \\(d_C\\) & Gross + & Gross - & Two largest positive \\(d_i\\) & Two largest negative \\(d_i\\) \\\\",
-        "\\midrule",
-    ]
-    ordered = sort(data, :focal_order)
-    previous_domain = nothing
-    for row in eachrow(ordered)
-        domain = String(row.domain)
-        previous_domain !== nothing && previous_domain != domain &&
-            push!(lines, "\\addlinespace")
-        positives = two_contributor_entries(
-            row,
-            :largest_positive_contributor,
-            :largest_positive_d_i,
-            :second_largest_positive_contributor,
-            :second_largest_positive_d_i,
-        )
-        negatives = two_contributor_entries(
-            row,
-            :largest_negative_contributor,
-            :largest_negative_d_i,
-            :second_largest_negative_contributor,
-            :second_largest_negative_d_i,
-        )
-        displayed = party_contribution_closure_preserving_display(
-            row.d_C,
-            row.gross_positive_party_contribution,
-        )
-        push!(
-            lines,
-            "$(latex_escape(row.case)) & $(displayed.d_C) & " *
-            "$(displayed.gross_positive) & " *
-            "$(displayed.gross_negative) & " *
-            "$(positives) & $(negatives) \\\\",
-        )
-        previous_domain = domain
-    end
-    append!(lines, [
-        "\\bottomrule",
-        "\\end{tabularx}",
-        "\\begin{minipage}{0.98\\linewidth}",
-        "\\vspace{0.35em}",
-        "\\footnotesize\\textit{Notes:} Gross - is the absolute sum of negative party contributions. The three aggregate columns use a closure-preserving three-decimal display; all identities are calculated and checked exactly before rounding. \\(d_i\\) is an ex post accounting contribution to the coalition differential. Positive and negative party contributions sum to \\(d_C\\). For 2014 and 2018, party-level contributions are ex post accounting attributions because seats were often allocated through joint electoral lists. These values do not identify party-specific causal effects of the electoral rules.",
-        "\\end{minipage}",
-        "\\end{table}",
-    ])
-    return join(lines, "\n")
-end
 
 
 include("CabinetDistrictTable.jl")
@@ -1838,83 +1446,6 @@ function write_accounting_integration_outputs(
     district_table = cabinet_district_concentration(integration.focal.state)
     record_csv("tables/table_cabinet_district_concentration.csv", district_table, "table",
         "Exact district concentration for inverted cabinet vectors; shared table/prose source.")
-    latex_assets = (
-        ("latex/table_coalition_party_component_extremes.tex",
-         party_component_extremes_latex(reloaded["tables/table_coalition_party_component_extremes.csv"]),
-         "Generated appendix table of largest member-party within- and between-district contributions.",
-         nrow(component_table), ncol(component_table)),
-        ("latex/table_cabinet_district_concentration.tex",
-         cabinet_district_concentration_latex(district_table),
-         "Generated cabinet within-district concentration tabular.", nrow(district_table), ncol(district_table)),
-        (
-            "latex/table_accounting_focal_cases.tex",
-            focal_case_latex(reloaded["tables/table_accounting_focal_cases.csv"]),
-            "Generated compact sign-and-magnitude table for selected focal accounting vectors.",
-            nrow(focal_table),
-            length(names(focal_table)),
-        ),
-        (
-            "latex/table_accounting_gross_components.tex",
-            gross_components_latex(
-                reloaded["tables/table_accounting_gross_components.csv"],
-            ),
-            "Generated gross-component concentration appendix table.",
-            nrow(gross_table),
-            length(names(gross_table)),
-        ),
-        (
-            "latex/table_accounting_selected_party_geography.tex",
-            selected_party_geography_latex(
-                reloaded["tables/table_accounting_selected_party_geography.csv"],
-            ),
-            "Generated selected-party geography appendix table.",
-            nrow(party_table),
-            length(names(party_table)),
-        ),
-        (
-            "latex/table_accounting_minimal_ideological.tex",
-            minimal_ideological_latex(
-                reloaded["tables/table_accounting_minimal_ideological.csv"],
-            ),
-            "Generated portrait tabular for all endpoint-minimal ideological decompositions.",
-            nrow(minimal_table),
-            length(names(minimal_table)),
-        ),
-        (
-            "latex/table_coalition_party_contributions.tex",
-            coalition_party_contribution_latex(
-                reloaded["tables/table_coalition_party_contributions.csv"],
-            ),
-            "Generated appendix table of focal coalition-party contribution diagnostics.",
-            nrow(contribution_table),
-            length(names(contribution_table)),
-        ),
-    )
-    unidentified_days = CD.cabinet_unidentified_days(output_root)
-    date_note = CD.cabinet_date_convention_note(output_root)
-    cabinet_tables = Set(["latex/table_coalition_party_component_extremes.tex",
-        "latex/table_cabinet_district_concentration.tex", "latex/table_accounting_focal_cases.tex",
-        "latex/table_accounting_gross_components.tex", "latex/table_coalition_party_contributions.tex"])
-    for (relative_path, contents, description, rows, columns) in latex_assets
-        if relative_path in cabinet_tables && (unidentified_days > 0 || !isempty(date_note))
-            note = CD.cabinet_identification_note(unidentified_days) * "\n" * date_note
-            # Keep the generated qualification inside a generator-owned table
-            # when it already supplies a minipage note; bare tabulars append it.
-            contents = occursin("\\end{minipage}", contents) ?
-                replace(contents, "\\end{minipage}" => note * "\n\\end{minipage}"; count = 1) :
-                contents * "\n" * note
-        end
-        path = write_text(joinpath(output_root, relative_path), contents)
-        push!(artifacts, (
-            path = relative_path,
-            artifact_type = "latex",
-            description = description,
-            rows = rows,
-            columns = columns,
-            sha256 = sha256_file(path),
-        ))
-    end
-
     return artifacts
 end
 

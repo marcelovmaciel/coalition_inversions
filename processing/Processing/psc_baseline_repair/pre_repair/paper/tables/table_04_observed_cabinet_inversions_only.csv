@@ -1,4 +1,0 @@
-election_year,period,period_start,period_end,period_days,days_overlapping_mandate,share_of_mandate_pct,parties,votes,vote_share_pct,seats,seat_share_pct,quota_display,seat_diff_display,required_diff_display,majority_status,coalition_inversion
-2014,2016.2,2016-04-14,2016-04-15,2,2,0.14,"PCdoB, PDT, PMDB, PR, PSD, PT, PTB",45305141,46.54,259,50.49,238.73,20.27,18.27,seats_only,true
-2014,2017.1,2017-12-28,2018-04-06,100,100,6.84,"DEM, PMDB, PP, PPS, PSB, PSD, PSDB, PV",48591926,49.91,266,51.85,256.05,9.95,0.95,seats_only,true
-2022,2023.1,2023-01-01,2023-09-12,255,255,21.72,"MDB, PCdoB, PDT, PSB, PSD, PSOL, PT, REDE, UNIÃO",53490123,48.89,263,51.27,250.8,12.2,6.2,seats_only,true

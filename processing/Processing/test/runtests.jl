@@ -1,14 +1,11 @@
-using Test
-using Processing
+using Test, Processing
 
-@testset "Processing.jl" begin
-    include("test_party_classification.jl")
-    include("test_party_classification_2023.jl")
-    include("test_party_name_drift.jl")
+@testset "Scientific unit and integration tests" begin
+    include("test_inputs.jl")
     include("test_coalition_strict.jl")
+    include("test_scientific_domains.jl")
     include("test_coalition_period_linkage.jl")
-    include("test_ideological_interval_coalitions.jl")
     include("test_representation_profile.jl")
-    include("test_psc_baseline_repair.jl")
     include("test_cabinet_period_coalescing.jl")
+    include("../decomposition/runtests.jl")
 end

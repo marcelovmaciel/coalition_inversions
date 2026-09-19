@@ -19,6 +19,7 @@ using Statistics
 include(joinpath(processing_root, "src", "Processing.jl"))
 using .Processing
 import .Processing.AnalysisRunnerCore as ARC
+include(joinpath(processing_root, "decomposition", "CoalitionDecomposition.jl"))
 
 println("Paper-oriented Processing runner")
 println("running_dir: ", running_dir)
@@ -30,20 +31,16 @@ println("repo_root: ", repo_root)
 # =============================================================================
 
 data_root = joinpath(repo_root, "data", "raw", "electionsBR")
-coalition_json_path = Processing.CabinetRelease.default_pin_path() # Pinned release, never old cabinet JSON.
+coalition_json_path = Processing.CabinetRelease.default_pin_path() # Local public cabinet snapshot.
 classification_root_dir = joinpath(repo_root, "scrape_classification", "output")
 party_alias_path = joinpath(processing_root, "data", "party_aliases.csv")
 party_lineage_path = joinpath(processing_root, "data", "party_lineage_events.csv")
-cabinet_crosswalk_path = Processing.CabinetRelease.default_crosswalk_path()
 
-paper_output_root = joinpath(processing_root, "output", "paper")
+paper_output_root = joinpath(repo_root, "build", "results", "domains")
 raw_dir = joinpath(paper_output_root, "raw")
 diagnostics_dir = joinpath(paper_output_root, "diagnostics")
-cabinet_period_source_spells_path = joinpath(diagnostics_dir, "cabinet_period_source_spells.csv")
-cabinet_period_party_set_changes_path = joinpath(diagnostics_dir, "cabinet_period_party_set_changes.csv")
 tables_dir = joinpath(paper_output_root, "tables")
 figure_data_dir = joinpath(paper_output_root, "figure_data")
-latex_dir = joinpath(paper_output_root, "latex")
 artifact_manifest_path = joinpath(paper_output_root, "artifact_manifest.csv")
 review_manuscript_dir = joinpath(repo_root, "writing", "submission_inversions_review", "manuscript")
 
@@ -58,7 +55,6 @@ expected_national_vote_totals = Dict(
 )
 seat_majority_threshold = 257
 ALLOW_OVERWRITE = lowercase(get(ENV, "ALLOW_OVERWRITE", "false")) in ("1", "true", "yes")
-SYNC_REVIEW_ASSETS = lowercase(get(ENV, "SYNC_REVIEW_ASSETS", "true")) in ("1", "true", "yes")
 
 party_mun_zone_paths = Dict(
     2014 => joinpath(data_root, "2014", "party_mun_zone.csv"),
@@ -78,14 +74,12 @@ mkpath(raw_dir)
 mkpath(diagnostics_dir)
 mkpath(tables_dir)
 mkpath(figure_data_dir)
-mkpath(latex_dir)
 
 println("data_root: ", data_root)
 println("coalition_json_path: ", coalition_json_path)
 println("classification_root_dir: ", classification_root_dir)
 println("paper_output_root: ", paper_output_root)
 println("ALLOW_OVERWRITE: ", ALLOW_OVERWRITE)
-println("SYNC_REVIEW_ASSETS: ", SYNC_REVIEW_ASSETS)
 
 # =============================================================================
 # BLOCK 2. SMALL HELPERS
@@ -160,78 +154,18 @@ function write_artifact_csv(path, df, artifact_type, description; allow_overwrit
     return path
 end
 
-function write_artifact_text(path, content, artifact_type, description; rows = missing, columns = missing, allow_overwrite = ALLOW_OVERWRITE)
-    if isfile(path) && !allow_overwrite
-        error("Output exists and ALLOW_OVERWRITE is false: $(path)")
-    end
-    mkpath(dirname(path))
-    write(path, content)
-    push!(artifact_records, (
-        path = relpath(path, paper_output_root),
-        artifact_type = String(artifact_type),
-        description = String(description),
-        rows = rows,
-        columns = columns,
-    ))
-    return path
-end
 
-function sync_review_latex_asset(source_path)
-    if !SYNC_REVIEW_ASSETS
-        println("Review manuscript synchronization disabled: ", basename(source_path))
-        return nothing
-    end
-    isdir(review_manuscript_dir) || error(
-        "Current review manuscript directory not found: $(review_manuscript_dir)",
-    )
-    destination = joinpath(review_manuscript_dir, basename(source_path))
-    cp(source_path, destination; force = true)
-    println("Review manuscript table asset synchronized: ", destination)
-    return destination
-end
 
-function latex_escape(value)
-    io = IOBuffer()
-    for char in string(value)
-        if char == '\\'
-            print(io, "\\textbackslash{}")
-        elseif char == '&'
-            print(io, "\\&")
-        elseif char == '%'
-            print(io, "\\%")
-        elseif char == '$'
-            print(io, "\\\$")
-        elseif char == '#'
-            print(io, "\\#")
-        elseif char == '_'
-            print(io, "\\_")
-        elseif char == '{'
-            print(io, "\\{")
-        elseif char == '}'
-            print(io, "\\}")
-        elseif char == '~'
-            print(io, "\\textasciitilde{}")
-        elseif char == '^'
-            print(io, "\\textasciicircum{}")
-        else
-            print(io, char)
-        end
-    end
-    return String(take!(io))
-end
 
 function preflight_table()
     rows = NamedTuple[]
     push!(rows, (item = "repo root", path = repo_root, kind = "dir", exists = isdir(repo_root), essential = true))
     push!(rows, (item = "processing root", path = processing_root, kind = "dir", exists = isdir(processing_root), essential = true))
     push!(rows, (item = "data root", path = data_root, kind = "dir", exists = isdir(data_root), essential = true))
-    push!(rows, (item = "cabinet release pin", path = coalition_json_path, kind = "file", exists = isfile(coalition_json_path), essential = true))
+    push!(rows, (item = "cabinet public metadata", path = coalition_json_path, kind = "file", exists = isfile(coalition_json_path), essential = true))
     push!(rows, (item = "classification root", path = classification_root_dir, kind = "dir", exists = isdir(classification_root_dir), essential = true))
     push!(rows, (item = "party aliases", path = party_alias_path, kind = "file", exists = isfile(party_alias_path), essential = true))
     push!(rows, (item = "party lineage events", path = party_lineage_path, kind = "file", exists = isfile(party_lineage_path), essential = true))
-    push!(rows, (item = "cabinet crosswalk", path = cabinet_crosswalk_path, kind = "file", exists = isfile(cabinet_crosswalk_path), essential = true))
-    push!(rows, (item = "cabinet period source spells", path = cabinet_period_source_spells_path, kind = "file", exists = isfile(cabinet_period_source_spells_path), essential = false))
-    push!(rows, (item = "cabinet period party-set changes", path = cabinet_period_party_set_changes_path, kind = "file", exists = isfile(cabinet_period_party_set_changes_path), essential = false))
     for year in analysis_years
         push!(rows, (item = "$(year) party_mun_zone.csv", path = party_mun_zone_paths[year], kind = "file", exists = isfile(party_mun_zone_paths[year]), essential = true))
         push!(rows, (item = "$(year) candidate.csv", path = candidate_paths[year], kind = "file", exists = isfile(candidate_paths[year]), essential = true))
@@ -533,174 +467,10 @@ function validate_cabinet_composition_table!(display_df, source_df)
     return true
 end
 
-function minimal_inversion_tabular_latex(df)
-    io = IOBuffer()
-    println(io, raw"\begin{tabularx}{\textwidth}{@{}lllrrrrrr>{\raggedright\arraybackslash}X@{}}")
-    println(io, raw"\toprule")
-    println(io, "Election & Start & End & Parties & Vote \\% & Seats & \\(q_C\\) & \\(d_C\\) & \\(r_C\\) & Interval " * repeat("\\", 2))
-    println(io, raw"\midrule")
-    for row in eachrow(df)
-        println(
-            io,
-            "$(row.election_year) & $(latex_escape(row.start_party)) & $(latex_escape(row.end_party)) & " *
-            "$(row.interval_size) & $(fmt2(row.vote_share_pct)) & $(row.seats) & " *
-            "$(fmt2(row.quota_display)) & $(fmt2(row.seat_diff_display)) & " *
-            "$(fmt2(row.required_diff_display)) & $(latex_escape(row.parties)) \\\\",
-        )
-    end
-    println(io, raw"\bottomrule")
-    println(io, raw"\end{tabularx}")
-    return String(take!(io))
-end
 
-function selected_party_differential_tabular_latex(df)
-    io = IOBuffer()
-    println(io, raw"\begin{tabular}{llrrrr}")
-    println(io, raw"\toprule")
-    println(io, "Election & Party & Vote share & Seats & Quota & Seat diff. " * repeat("\\", 2))
-    println(io, raw"\midrule")
-    previous_year = nothing
-    for row in eachrow(df)
-        year = Int(row.election_year)
-        if previous_year !== nothing && year != previous_year
-            println(io, raw"\addlinespace")
-        end
-        println(
-            io,
-            "$(year) & $(latex_escape(row.party)) & $(fmt2(row.vote_share_pct)) & " *
-            "$(row.seats) & $(fmt2(row.quota_display)) & $(fmt2(row.seat_diff_display)) \\\\",
-        )
-        previous_year = year
-    end
-    println(io, raw"\bottomrule")
-    println(io, raw"\end{tabular}")
-    return String(take!(io))
-end
 
-function party_representation_appendix_latex(df)
-    require_table_columns(df, (:election_year, :party, :votes, :seats), "Party representation appendix")
-    sort(unique(Int.(df.election_year))) == analysis_years || error(
-        "Party representation appendix must contain exactly the 2014, 2018, and 2022 elections.",
-    )
-    all(df.votes .> 0) || error("Party representation appendix requires positive votes for every party.")
-    all(df.seats .>= 0) || error("Party representation appendix contains negative seats.")
-    for year in analysis_years
-        year_df = df[df.election_year .== year, :]
-        validate_party_accounting!(year_df, year; expected_national_votes = expected_national_vote_totals[year])
-        require_accounting_identity(sum(year_df.quota), expected_total_seats, year, "sum(q_i) = 513")
-        require_accounting_identity(sum(year_df.seat_diff), 0.0, year, "sum(d_i) = 0")
-        all(year_df.representation_ratio[year_df.seats .== 0] .== 0) || error(
-            "Zero-seat parties must have R_i = 0 in $(year).",
-        )
-        println("Party appendix $(year): parties=$(nrow(year_df)), zero-seat parties=$(count(==(0), year_df.seats)), seats=$(sum(year_df.seats)), quotas=$(sum(year_df.quota)), differentials=$(sum(year_df.seat_diff))")
-    end
-    quoted_differentials = (
-        (2014, "PMDB", 8.13), (2014, "PSDB", -4.43),
-        (2018, "PP", 8.76), (2018, "PSL", -7.70),
-        (2022, "PL", 13.78), (2022, "PSOL", -6.06),
-    )
-    for (year, party, expected) in quoted_differentials
-        row = only(eachrow(df[(df.election_year .== year) .& (df.party .== party), :]))
-        abs(row.seat_diff - expected) < 0.005 || error(
-            "Quoted differential mismatch for $(year)/$(party): $(row.seat_diff), expected approximately $(expected).",
-        )
-        println("Quoted differential $(year)/$(party): $(fmt2(row.seat_diff)) passed")
-    end
 
-    ordered = sort(df, [:election_year, :vote_share, :party]; rev = [false, true, false])
-    io = IOBuffer()
-    row_break = repeat("\\", 2)
-    println(io, "% Generated by running.jl from raw/party_seat_differentials_all_years.csv.")
-    println(io, raw"\begingroup")
-    println(io, raw"\small")
-    println(io, raw"\setlength{\tabcolsep}{4pt}")
-    println(io, raw"\renewcommand{\arraystretch}{1.08}")
-    println(io, raw"\setlength{\LTcapwidth}{\textwidth}")
-    println(io, raw"\begin{longtable}{@{}llrrrrrr@{}}")
-    println(io, raw"\caption{Complete party-level representation diagnostics by election}\label{tab:party-representation}", row_break)
-    header = raw"Election & Party & Votes & Vote \% & Seats & $q_i$ & $d_i$ & $R_i$ " * row_break
-    println(io, raw"\toprule")
-    println(io, header)
-    println(io, raw"\midrule")
-    println(io, raw"\endfirsthead")
-    println(io, raw"\caption[]{Complete party-level representation diagnostics by election (continued)}", row_break)
-    println(io, raw"\toprule")
-    println(io, header)
-    println(io, raw"\midrule")
-    println(io, raw"\endhead")
-    println(io, raw"\midrule")
-    println(io, raw"\multicolumn{8}{r@{}}{\footnotesize Continued on next page}", row_break)
-    println(io, raw"\endfoot")
-    println(io, raw"\bottomrule")
-    println(io, raw"\endlastfoot")
-    for year in analysis_years
-        year_df = ordered[ordered.election_year .== year, :]
-        for (index, row) in enumerate(eachrow(year_df))
-            differential = @sprintf("%+.2f", row.seat_diff)
-            ratio = @sprintf("%.3f", row.representation_ratio)
-            cells = (
-                string(year), latex_escape(row.party), string(Int(row.votes)),
-                fmt2(100 * row.vote_share), string(Int(row.seats)), fmt2(row.quota),
-                "\\($(differential)\\)", ratio,
-            )
-            # Keep each election's final party together with its total row.
-            row_end = index == nrow(year_df) ? row_break * "*" : row_break
-            println(io, join(cells, " & "), " ", row_end)
-        end
-        println(io, raw"\midrule")
-        totals = (
-            raw"\textbf{Total}", "", string(sum(Int.(year_df.votes))),
-            fmt2(100 * sum(year_df.vote_share)), string(sum(Int.(year_df.seats))),
-            fmt2(sum(year_df.quota)), "0.00", "",
-        )
-        println(io, join(totals, " & "), " ", row_break)
-        year == last(analysis_years) || println(io, raw"\addlinespace")
-    end
-    println(io, raw"\end{longtable}")
-    println(io, raw"\noindent\begin{minipage}{\textwidth}")
-    println(io, raw"\footnotesize Notes: $q_i=513(v_i/V)$, $d_i=s_i-q_i$, and")
-    println(io, raw"$R_i=(s_i/513)/(v_i/V)$. $V$ includes all valid federal-deputy")
-    println(io, raw"votes; parties with votes but no seats are retained.")
-    println(io, raw"\end{minipage}\par")
-    println(io, raw"\endgroup")
-    return String(take!(io))
-end
 
-function write_party_representation_appendix(df)
-    content = party_representation_appendix_latex(df)
-    path = write_artifact_text(
-        joinpath(latex_dir, "table_appendix_party_representation.tex"), content,
-        "latex", "Complete party-level representation diagnostics for all elections.";
-        rows = nrow(df), columns = 8,
-    )
-    sync_review_latex_asset(path)
-    return path
-end
-
-function ideology_order_appendix_latex(df)
-    io = IOBuffer()
-    println(io, raw"\begin{longtable}{rrlllrl}")
-    println(io, "\\caption{Party ideology order by election}\\label{tab:ideology-order-full}\\\\")
-    println(io, raw"\toprule")
-    println(io, "Election & Pos. & Party & Classification & Score & Source & Source party \\\\")
-    println(io, raw"\midrule")
-    println(io, raw"\endfirsthead")
-    println(io, raw"\toprule")
-    println(io, "Election & Pos. & Party & Classification & Score & Source & Source party \\\\")
-    println(io, raw"\midrule")
-    println(io, raw"\endhead")
-    for row in eachrow(df)
-        println(
-            io,
-            "$(row.election_year) & $(row.ordinal_position) & $(latex_escape(row.party)) & " *
-            "$(latex_escape(row.classification_label)) & $(fmt2(row.ideology_value_numeric)) & " *
-            "$(latex_escape(row.ideology_source)) & $(latex_escape(row.source_party_raw)) \\\\",
-        )
-    end
-    println(io, raw"\bottomrule")
-    println(io, raw"\end{longtable}")
-    return String(take!(io))
-end
 
 function vcat_or_empty(tables)
     isempty(tables) && return DataFrame()
@@ -738,22 +508,6 @@ function append_mapping!(target, raw_values, year; source, context = "", overrid
     return target
 end
 
-function canonical_party_for_election(raw_party, year; overrides = Dict{String,String}())
-    raw_text = strip(String(raw_party))
-    normalized = Processing.normalize_party(raw_text)
-    haskey(overrides, normalized) && return overrides[normalized]
-    canonical = Processing.canonical_party(raw_text; year = year, strict = false)
-    canonical != Processing.UNKNOWN_PARTY && return canonical
-    error("Party alias not mapped for election year $(year): $(raw_text)")
-end
-
-function canonicalize_party_column!(df, year; col = :SG_PARTIDO, overrides = Dict{String,String}())
-    raw_values = String.(df[!, col])
-    mapped = Dict(raw => canonical_party_for_election(raw, year; overrides = overrides) for raw in unique(raw_values))
-    df[!, col] = [mapped[raw] for raw in raw_values]
-    return df
-end
-
 function inclusive_days(start_date::Date, end_date::Date)
     end_date < start_date && error("Invalid date interval: $(start_date) > $(end_date).")
     return Dates.value(end_date - start_date) + 1
@@ -767,14 +521,8 @@ function overlap_days(start_a::Date, end_a::Date, start_b::Date, end_b::Date)
 end
 
 function summarize_coalition(summary_df, parties)
-    party_set = Set(String.(parties))
-    available = Set(String.(summary_df.SG_PARTIDO))
-    missing_parties = setdiff(sort(collect(party_set)), sort(collect(available)))
-    isempty(missing_parties) || error("Coalition party absent from election summary: $(join(missing_parties, ", "))")
-    mask = in.(String.(summary_df.SG_PARTIDO), Ref(party_set))
-    total_votes = sum(summary_df.valid_total)
-    coalition_votes = sum(summary_df.valid_total[mask])
-    coalition_seats = sum(summary_df.total_seats[mask])
+    totals = Processing.coalition_totals(summary_df, parties)
+    total_votes, coalition_votes, coalition_seats = totals.national_vote_total, totals.votes, totals.seats
     accounting = Processing.coalition_accounting_metrics(
         coalition_votes,
         coalition_seats;
@@ -947,20 +695,7 @@ end
 # analysis or overwriting other tables, figures, or diagnostics. For example:
 # ALLOW_OVERWRITE=true julia -O0 --startup-file=no --project=processing/Processing \
 #     processing/Processing/running/running.jl --party-representation-only
-if "--party-representation-only" in ARGS
-    party_data = CSV.read(joinpath(raw_dir, "party_seat_differentials_all_years.csv"), DataFrame)
-    manifest = CSV.read(artifact_manifest_path, DataFrame)
-    manifest_row = NamedTuple(only(eachrow(manifest[manifest.path .== "artifact_manifest.csv", :])))
-    write_party_representation_appendix(party_data)
-    replaced_paths = Set([record.path for record in artifact_records])
-    push!(replaced_paths, "artifact_manifest.csv")
-    filter!(row -> row.path ∉ replaced_paths, manifest)
-    append!(manifest, DataFrame(artifact_records))
-    push!(manifest, merge(manifest_row, (rows = nrow(manifest) + 1,)))
-    write_paper_csv(artifact_manifest_path, manifest; allow_overwrite = true)
-    println("Party representation appendix generated; other paper artifacts retained.")
-    exit()
-end
+
 
 # =============================================================================
 # BLOCK 3. PREFLIGHT CHECKS
@@ -970,11 +705,6 @@ print_block("BLOCK 3. PREFLIGHT CHECKS")
 preflight_checks = preflight_table()
 show_table(preflight_checks)
 write_artifact_csv(joinpath(diagnostics_dir, "preflight_checks.csv"), preflight_checks, "diagnostic", "Required input files and directories for the paper runner.")
-for path in [cabinet_period_source_spells_path, cabinet_period_party_set_changes_path]
-    if isfile(path)
-        record_artifact!(path, "diagnostic", "Contemporaneous cabinet release witnesses and party-set changes; pinned release provenance included.", CSV.read(path, DataFrame))
-    end
-end
 missing_essential = preflight_checks[(preflight_checks.essential .== true) .& (preflight_checks.exists .== false), :]
 nrow(missing_essential) == 0 || error("Preflight failed; missing required input(s): $(join(String.(missing_essential.path), ", "))")
 
@@ -987,7 +717,6 @@ vote_mapping_tables = DataFrame[]
 seat_mapping_tables = DataFrame[]
 coalition_mapping_tables = DataFrame[]
 ideology_mapping_tables = DataFrame[]
-cabinet_translation_tables = DataFrame[]
 vote_consistency_tables = DataFrame[]
 
 function selected_vote_component_diagnostic(pmz, year)
@@ -1074,44 +803,24 @@ println("classification_2025 parties: ", join(String.(classification_2025.party_
 
 print_block("BLOCK 6. LOAD ELECTION DATA EXPLICITLY BY YEAR")
 
+# One frozen electoral loader supplies national and district accounting.
 function load_votes_for_year(year, path; overrides = Dict{String,String}())
-    needed_columns = Set(["DS_CARGO", "SG_UF", "SG_PARTIDO", "QT_VOTOS_NOMINAIS_VALIDOS", "QT_VOTOS_NOMINAIS", "QT_TOTAL_VOTOS_LEG_VALIDOS", "QT_VOTOS_LEGENDA_VALIDOS", "QT_VOTOS_LEGENDA", "QT_VOTOS_NOMINAIS_CONVR_LEG", "QT_VOTOS_NOM_CONVR_LEG_VALIDOS", "QT_VOTOS", "TOTAL_VOTOS", "QT_VOTOS_VALIDOS"])
-    pmz = CSV.read(path, DataFrame; select = (index, name) -> String(name) in needed_columns)
-    Processing.upper_strip!(pmz, :DS_CARGO)
-    filter!(row -> row.DS_CARGO == "DEPUTADO FEDERAL", pmz)
-    Processing.stringify!(pmz, :SG_UF)
-    Processing.stringify!(pmz, :SG_PARTIDO)
-    canonicalize_party_column!(pmz, year; col = :SG_PARTIDO, overrides = overrides)
-    vote_kwargs = ARC.vote_kwargs_for_year(year)
-    nom_col, leg_col, total_col, scheme = Processing.detect_vote_cols(pmz; vote_kwargs...)
-    votes = if scheme == :total
-        total_col === nothing && error("Could not detect total vote column for $(year).")
-        Processing.to_int.(pmz[!, total_col])
-    else
-        nom_col === nothing && error("Could not detect nominal vote column for $(year).")
-        leg_col === nothing && error("Could not detect legend vote column for $(year).")
-        Processing.to_int.(pmz[!, nom_col]) .+ Processing.to_int.(pmz[!, leg_col])
-    end
-    national_votes = combine(groupby(DataFrame(SG_PARTIDO = pmz.SG_PARTIDO, valid_total = votes), :SG_PARTIDO), :valid_total => sum => :valid_total)
-    sort!(national_votes, :valid_total, rev = true)
-    return national_votes
+    isempty(overrides) || error("Electoral corrections belong in the canonical party aliases.")
+    district = CoalitionDecomposition.load_district_votes(year, path)
+    votes = combine(groupby(district, :party), :votes => sum => :valid_total)
+    rename!(votes, :party => :SG_PARTIDO)
+    sort!(votes, :valid_total; rev = true)
+    return votes
 end
 
 function load_seats_for_year(year, path; overrides = Dict{String,String}())
-    needed_columns = [:ANO_ELEICAO, :NR_TURNO, :SG_UF, :CD_CARGO, :DS_CARGO, :SG_PARTIDO, :DS_SIT_TOT_TURNO]
-    candidates = CSV.read(path, DataFrame; select = needed_columns, normalizenames = true)
-    Processing.upper_strip!(candidates, :DS_CARGO)
-    filter!(row -> row.DS_CARGO == "DEPUTADO FEDERAL", candidates)
-    Processing.stringify!(candidates, :SG_UF)
-    Processing.stringify!(candidates, :SG_PARTIDO)
-    canonicalize_party_column!(candidates, year; col = :SG_PARTIDO, overrides = overrides)
-    winner_status = uppercase.(strip.(String.(candidates.DS_SIT_TOT_TURNO)))
-    candidates[!, :WINNER] = in.(winner_status, Ref(Processing.WINNER_STATUSES))
-    national_seats = combine(groupby(candidates, :SG_PARTIDO), :WINNER => (w -> sum(Int.(w))) => :total_seats)
-    filter!(row -> row.total_seats > 0, national_seats)
-    sort!(national_seats, :total_seats, rev = true)
-    sum(national_seats.total_seats) == expected_total_seats || error("Expected $(expected_total_seats) seats for $(year), found $(sum(national_seats.total_seats)).")
-    return national_seats
+    isempty(overrides) || error("Electoral corrections belong in the canonical party aliases.")
+    district = CoalitionDecomposition.load_district_seats(year, path)
+    seats = combine(groupby(district, :party), :seats => sum => :total_seats)
+    rename!(seats, :party => :SG_PARTIDO)
+    sort!(seats, :total_seats; rev = true)
+    sum(seats.total_seats) == expected_total_seats || error("Chamber seat total changed for $(year).")
+    return seats
 end
 
 function print_loaded_year(year, votes, seats, summary)
@@ -1151,7 +860,7 @@ print_loaded_year(2022, votes_2022, seats_2022, party_summary_2022)
 print_block("BLOCK 7. COALITION PERIOD LINKAGE")
 cabinet_calendar = Processing.CabinetRelease.calendar_table(coalition_json_path)
 cabinet_unidentified = cabinet_calendar[.!cabinet_calendar.identified, :]
-write_artifact_csv(joinpath(raw_dir, "cabinet_calendar_status.csv"), cabinet_calendar, "raw", "Complete historical calendar, including unidentified sets, pinned release IDs and half-open dates.")
+write_artifact_csv(joinpath(raw_dir, "cabinet_calendar_status.csv"), cabinet_calendar, "raw", "Published cabinet membership calendar, qualified by coverage/status and half-open dates.")
 write_artifact_csv(joinpath(raw_dir, "cabinet_unidentified_intervals.csv"), cabinet_unidentified, "raw", "Explicit unavailable full cabinet compositions; no confirmed core is substituted for a complete set.")
 coalition_periods_raw = Processing.coalitions_by_period_raw(; path = coalition_json_path)
 coalition_windows = Processing.coalition_period_windows(; path = coalition_json_path)
@@ -1215,7 +924,6 @@ write_artifact_csv(joinpath(raw_dir, "party_seat_differentials_2014.csv"), party
 write_artifact_csv(joinpath(raw_dir, "party_seat_differentials_2018.csv"), party_seat_differentials_2018, "raw", "Party-level vote shares, seat shares, quotas, and seat differentials for 2018.")
 write_artifact_csv(joinpath(raw_dir, "party_seat_differentials_2022.csv"), party_seat_differentials_2022, "raw", "Party-level vote shares, seat shares, quotas, and seat differentials for 2022.")
 write_artifact_csv(joinpath(raw_dir, "party_seat_differentials_all_years.csv"), party_seat_differentials_all_years, "raw", "Party-level vote shares, seat shares, quotas, and seat differentials for all elections.")
-write_party_representation_appendix(party_seat_differentials_all_years)
 
 function over_under_table(all_df; n_each = 5)
     rows = NamedTuple[]
@@ -1278,29 +986,12 @@ validate_csv_roundtrip!(
     "Selected party-differential table",
 )
 validate_selected_party_differential_table!(selected_party_differentials_from_csv, party_seat_differentials_all_years)
-selected_party_differentials_latex_path = write_artifact_text(
-    joinpath(latex_dir, "table_01_party_differential_tabular.tex"),
-    selected_party_differential_tabular_latex(selected_party_differentials_from_csv),
-    "latex",
-    "CSV-driven tabular for manuscript Table 1.";
-    rows = nrow(selected_party_differentials_from_csv),
-    columns = 6,
-)
-sync_review_latex_asset(selected_party_differentials_latex_path)
 
 # =============================================================================
 # BLOCK 9. OBSERVED CABINET-PERIOD COALITIONS
 # =============================================================================
 
 print_block("BLOCK 9. OBSERVED CABINET-PERIOD COALITIONS")
-
-function cabinet_translation_report_for_period(raw_parties; election_year, coalition_year, period, valid_election_parties)
-    historical = only(eachrow(cabinet_calendar[cabinet_calendar.period .== period, :]))
-    report = Processing.CabinetRelease.translate(raw_parties; election_year,
-        valid_election_parties, period, historical_period_id=historical.period_id)
-    report[!, :coalition_year] = fill(Int(coalition_year), nrow(report))
-    return report
-end
 
 function build_observed_coalition_table(summary_df, election_year, coalition_periods)
     valid_election_parties = String.(summary_df.SG_PARTIDO)
@@ -1309,28 +1000,14 @@ function build_observed_coalition_table(summary_df, election_year, coalition_per
     for period in sort(collect(keys(coalition_periods)); by = Processing.period_sort_key)
         coalition_year = parse(Int, first(split(period, ".")))
         raw_parties = coalition_periods[period]
-        translation_report = cabinet_translation_report_for_period(raw_parties; election_year = election_year, coalition_year = coalition_year, period = period, valid_election_parties = valid_election_parties)
-        push!(cabinet_translation_tables, translation_report)
-        unmapped = translation_report[translation_report.mapping_type .== "unmapped", :]
-        nrow(unmapped) == 0 || error("Cabinet party without election-space mapping for $(election_year) $(period): " * join(String.(unmapped.cabinet_party_canonical), ", "))
-        election_space_parties = sort(unique(String.(translation_report.election_party[translation_report.election_party .!= ""])))
-        if Int(election_year) == 2018 && any(translation_report.cabinet_party_canonical .== "UNIAO")
-            required = Set(["DEM", "PSL"])
-            translated = Set(election_space_parties)
-            required ⊆ translated || error("2018 $(period): contemporaneous UNIÃO must translate to DEM + PSL.")
-            !("UNIÃO" in translated) || error("2018 $(period): UNIÃO cannot appear in 2018 election-space parties.")
-            uniao_rows = translation_report[translation_report.cabinet_party_canonical .== "UNIAO", :]
-            all(uniao_rows.mapping_type .== "crosswalk_fusion_expansion") || error("2018 $(period): UNIÃO must use crosswalk_fusion_expansion, not same-label fallback.")
-        end
-        expected_set = only(cabinet_calendar.election_party_set[cabinet_calendar.period .== period])
-        Set(election_space_parties) == Set(split(expected_set, ';')) || error("Daily mapping/recompression mismatch for $(period)")
+        election_space_parties = Processing.CabinetRelease.validate_parties(raw_parties; election_year,valid_election_parties)
         metrics = summarize_coalition(summary_df, election_space_parties)
         period_start, period_end = coalition_windows[period]
         period_start === nothing && error("Missing start date for coalition period $(period).")
         period_end === nothing && error("Missing end date for coalition period $(period).")
         days = inclusive_days(period_start, period_end)
         overlap = overlap_days(period_start, period_end, mandate.start_date, mandate.end_date)
-        push!(rows, merge((election_year = Int(election_year), coalition_year = coalition_year, period = period, period_start = period_start, period_end = period_end, period_days = days, days_overlapping_mandate = overlap, share_of_mandate = overlap / mandate.total_days, historical_parties = join(sort(String.(raw_parties)), ", "),
+        push!(rows, merge((election_year = Int(election_year), coalition_year = coalition_year, period = period, period_start = period_start, period_end = period_end, period_days = days, days_overlapping_mandate = overlap, share_of_mandate = overlap / mandate.total_days, 
             administration_id = String(only(cabinet_calendar.administration_id[cabinet_calendar.period .== period])),
             composition_status = String(only(cabinet_calendar.composition_status[cabinet_calendar.period .== period])),
             source_periods = String(only(cabinet_calendar.source_periods[cabinet_calendar.period .== period])),
@@ -1342,7 +1019,7 @@ function build_observed_coalition_table(summary_df, election_year, coalition_per
         DataFrame([merge((election_year=Int(election_year), coalition_year=Int(election_year)+1,
             period="", period_start=mandate.start_date, period_end=mandate.start_date,
             period_days=0, days_overlapping_mandate=0, share_of_mandate=0.0,
-            historical_parties="", administration_id="", composition_status="", source_periods="[]", parties=""),
+            administration_id="", composition_status="", source_periods="[]", parties=""),
             summarize_coalition(summary_df, String[]))])[1:0, :]
     else
         DataFrame(rows)
@@ -1365,15 +1042,13 @@ end
 observed_cabinet_coalitions_2014 = build_observed_coalition_table(party_summary_2014, 2014, coalitions_for_2014_election)
 observed_cabinet_coalitions_2018 = build_observed_coalition_table(party_summary_2018, 2018, coalitions_for_2018_election)
 observed_cabinet_coalitions_2022 = build_observed_coalition_table(party_summary_2022, 2022, coalitions_for_2022_election)
-# Preserve the translated historical rows for audit before coalescing observations.
+# Published periods are already maximal by election and membership.
 cabinet_coalitions_before_coalescing = vcat(observed_cabinet_coalitions_2014, observed_cabinet_coalitions_2018, observed_cabinet_coalitions_2022; cols = :union)
-observed_cabinet_coalitions_all_years = Processing.coalesce_adjacent_cabinet_periods(
-    cabinet_coalitions_before_coalescing,
-)
+observed_cabinet_coalitions_all_years = copy(cabinet_coalitions_before_coalescing)
 observed_cabinet_coalitions_2014 = observed_cabinet_coalitions_all_years[observed_cabinet_coalitions_all_years.election_year .== 2014, :]
 observed_cabinet_coalitions_2018 = observed_cabinet_coalitions_all_years[observed_cabinet_coalitions_all_years.election_year .== 2018, :]
 observed_cabinet_coalitions_2022 = observed_cabinet_coalitions_all_years[observed_cabinet_coalitions_all_years.election_year .== 2022, :]
-write_artifact_csv(joinpath(diagnostics_dir, "cabinet_coalitions_before_coalescing.csv"), cabinet_coalitions_before_coalescing, "diagnostic", "Translated historical cabinet rows before adjacent equal-party-set coalescing.")
+write_artifact_csv(joinpath(diagnostics_dir, "cabinet_coalitions_before_coalescing.csv"), cabinet_coalitions_before_coalescing, "diagnostic", "Published membership periods before grouping distinct recurrent sets.")
 coalescing_audit = NamedTuple[]
 for year in analysis_years
     before = cabinet_coalitions_before_coalescing[cabinet_coalitions_before_coalescing.election_year .== year, :]
@@ -1502,7 +1177,7 @@ validate_csv_roundtrip!(
     "Cabinet-composition appendix table",
 )
 validate_cabinet_composition_table!(cabinet_composition_from_csv, observed_cabinet_coalitions_all_years)
-# Cabinet TeX has one producer: cabinet_v5_assets.py after exact accounting.
+# Cabinet TeX has one producer: scripts/make_tables.py after exact accounting.
 cabinet_inversion_table_csv_path = write_artifact_csv(joinpath(tables_dir, "table_04_observed_cabinet_inversions_only.csv"), table_04_observed_cabinet_inversions_only, "table", "Distinct inverted cabinet party sets with rounded electoral display columns.")
 cabinet_inversion_table_from_csv = CSV.read(cabinet_inversion_table_csv_path, DataFrame; types=Dict(:period=>String))
 validate_cabinet_inversion_table!(cabinet_inversion_table_from_csv, observed_cabinet_inversions_only)
@@ -1619,15 +1294,6 @@ validate_csv_roundtrip!(
     "Ideology-order appendix table",
 )
 validate_ideology_order_table!(ideology_order_table_from_csv, ideology_order_all_years)
-ideology_order_latex_path = write_artifact_text(
-    joinpath(latex_dir, "table_appendix_ideology_order.tex"),
-    ideology_order_appendix_latex(ideology_order_table_from_csv),
-    "latex",
-    "CSV-driven longtable for the full ideology-order appendix.";
-    rows = nrow(ideology_order_table_from_csv),
-    columns = 7,
-)
-sync_review_latex_asset(ideology_order_latex_path)
 
 # =============================================================================
 # BLOCK 11. IDEOLOGICALLY CONTIGUOUS NO-GAP COALITIONS
@@ -1636,7 +1302,7 @@ sync_review_latex_asset(ideology_order_latex_path)
 print_block("BLOCK 11. IDEOLOGICALLY CONTIGUOUS NO-GAP COALITIONS")
 
 function build_ideological_intervals(year, summary_df, ideology_df; universe = primary_ideological_universe)
-    raw = Processing.ideological_interval_coalitions(summary_df, ideology_df; universe = universe)
+    raw = Processing.ideological_interval_view(domain_results[(year, universe, 0)])
     n = count(row -> universe == :all_parties || row.total_seats > 0, eachrow(summary_df))
     expected_rows = n * (n + 1) ÷ 2
     nrow(raw) == expected_rows || error("Ideological interval count mismatch for $(year): expected $(expected_rows), found $(nrow(raw)).")
@@ -1646,13 +1312,13 @@ function build_ideological_intervals(year, summary_df, ideology_df; universe = p
     party_seats = Dict(String(row.SG_PARTIDO) => Int(row.total_seats) for row in eachrow(summary_df))
     raw[!, :left_removed_seats] = [row.seats - party_seats[String(row.start_party)] for row in eachrow(raw)]
     raw[!, :right_removed_seats] = [row.seats - party_seats[String(row.end_party)] for row in eachrow(raw)]
-    raw[!, :minimal_connected_winning] = raw.seat_majority .& ((raw.interval_size .== 1) .| ((raw.left_removed_seats .< seat_majority_threshold) .& (raw.right_removed_seats .< seat_majority_threshold)))
+    raw[!, :minimal_connected_winning] = copy(raw.minimal_seat_majority)
     raw[!, :minimal_connected_inversion] = raw.coalition_inversion .& raw.minimal_connected_winning
     # Preserve the established aliases consumed by the heatmap and bridge while
     # exposing the clearer status names required by the analytical CSV.
     raw[!, :endpoint_minimal_connected_winning] = copy(raw.minimal_connected_winning)
     raw[!, :minimal_ideological_interval_inversion] = copy(raw.minimal_connected_inversion)
-    out = select(raw, :election_year, :ideological_universe, :ideological_party_count, :left_original_ordinal_position, :right_original_ordinal_position, :k, :gap_count, :coalition_id, :q_C, :d_C, :R_C, :minimal_seat_majority, :inversion, :start_index, :end_index, :start_party, :end_party, :parties, :interval_size, :votes, :national_vote_total, :vote_share, :seats, :seat_share, :quota, :seat_diff, :required_diff, :representation_ratio, :vote_majority, :seat_majority, :majority_status, :coalition_inversion, :left_removed_seats, :right_removed_seats, :minimal_connected_winning, :minimal_connected_inversion, :endpoint_minimal_connected_winning, :minimal_ideological_interval_inversion, :old_sweep_equivalent)
+    out = select(raw, :election_year, :ideological_universe, :ideological_party_count, :left_original_ordinal_position, :right_original_ordinal_position, :k, :gap_count, :coalition_id, :q_C, :d_C, :R_C, :minimal_seat_majority, :inversion, :start_index, :end_index, :start_party, :end_party, :parties, :interval_size, :votes, :national_vote_total, :vote_share, :seats, :seat_share, :quota, :seat_diff, :required_diff, :representation_ratio, :vote_majority, :seat_majority, :majority_status, :coalition_inversion, :left_removed_seats, :right_removed_seats, :minimal_connected_winning, :minimal_connected_inversion, :endpoint_minimal_connected_winning, :minimal_ideological_interval_inversion)
     sort!(out, [:election_year, :start_index, :end_index])
     return out
 end
@@ -1688,61 +1354,13 @@ function appendix_minimal_connected_winning_table(df)
     return result
 end
 
-function minimal_connected_winning_latex(df)
-    io = IOBuffer()
-    println(io, "\\begin{landscape}")
-    println(io, "\\scriptsize")
-    println(io, "\\setlength{\\tabcolsep}{2pt}")
-    println(io, "\\renewcommand{\\arraystretch}{1.08}")
-    println(io, "\\begin{longtable}{|l|l|l|r|r|r|r|l|l|L{0.42\\linewidth}|}")
-    println(io, "\\caption{Minimal connected winning ideological intervals}\\label{tab:minimal-connected-winning-intervals}\\\\")
-    println(io, "\\hline")
-    println(io, "Election & Start & End & Parties & Vote \\% & Seats & Seat diff. & Status & Contains PT & Interval \\\\")
-    println(io, "\\hline")
-    println(io, "\\endfirsthead")
-    println(io, "\\hline")
-    println(io, "Election & Start & End & Parties & Vote \\% & Seats & Seat diff. & Status & Contains PT & Interval \\\\")
-    println(io, "\\hline")
-    println(io, "\\endhead")
-    for row in eachrow(df)
-        contains_pt = row.contains_PT ? "Yes" : "No"
-        println(io, "$(row.election_year) & $(latex_escape(row.start_party)) & $(latex_escape(row.end_party)) & $(row.n_parties) & $(fmt2(row.vote_share_pct)) & $(row.seats) & $(fmt2(row.seat_diff)) & $(latex_escape(row.status)) & $(contains_pt) & $(latex_escape(row.parties)) \\\\")
-        println(io, "\\hline")
-    end
-    println(io, "\\end{longtable}")
-    println(io, "\\end{landscape}")
-    return String(take!(io))
-end
 
-function build_legacy_first_majority_sweep(year, summary_df, ideology_df)
-    ordered = innerjoin(select(ideology_df, :SG_PARTIDO, :ordinal_position), select(summary_df, :SG_PARTIDO, :valid_total, :total_seats), on = :SG_PARTIDO)
-    sort!(ordered, :ordinal_position)
-    total_votes = sum(summary_df.valid_total)
-    rows = NamedTuple[]
-    for start_index in 1:nrow(ordered)
-        parties = String[]
-        coalition_votes = 0
-        coalition_seats = 0
-        end_index = missing
-        for current_index in start_index:nrow(ordered)
-            push!(parties, ordered.SG_PARTIDO[current_index])
-            coalition_votes += ordered.valid_total[current_index]
-            coalition_seats += ordered.total_seats[current_index]
-            if coalition_seats >= seat_majority_threshold
-                end_index = current_index
-                break
-            end
-        end
-        vote_share = coalition_votes / total_votes
-        seat_share = coalition_seats / expected_total_seats
-        quota = expected_total_seats * vote_share
-        seat_diff = coalition_seats - quota
-        vote_majority = vote_share > 0.5
-        seat_majority = coalition_seats >= seat_majority_threshold
-        push!(rows, (election_year = Int(year), start_index = Int(start_index), end_index = end_index, start_party = ordered.SG_PARTIDO[start_index], end_party = end_index === missing ? missing : ordered.SG_PARTIDO[end_index], parties = join(parties, ", "), votes = Int(coalition_votes), vote_share = Float64(vote_share), seats = Int(coalition_seats), seat_share = Float64(seat_share), quota = Float64(quota), seat_diff = Float64(seat_diff), vote_majority = Bool(vote_majority), seat_majority = Bool(seat_majority), majority_status = majority_status(vote_majority, seat_majority), coalition_inversion = Bool(seat_majority && vote_share < 0.5), reached_seat_majority = Bool(seat_majority), diagnostic_label = "legacy first-majority sweep"))
-    end
-    return DataFrame(rows)
-end
+# Enumerate each complete admissible domain once. All interval, appendix and
+# robustness views below project these results; minimality stays domain-relative.
+domain_results = Dict{Tuple{Int,Symbol,Int},DataFrame}(
+    (year, universe, k) => Processing.ideological_k_gap_coalitions(
+        party_summaries[year], full_ideology_orders[year]; k, universe)
+    for year in analysis_years for universe in ideological_universes for k in (0, 1))
 
 ideological_intervals_by_universe = Dict{Tuple{Int,Symbol},DataFrame}()
 for universe in ideological_universes, year in analysis_years
@@ -1795,7 +1413,7 @@ function k_gap_mask(value, position)
 end
 
 function build_k_gap_domain(year, summary_df, ideology_df; k, universe = primary_ideological_universe)
-    raw = Processing.ideological_k_gap_coalitions(summary_df, ideology_df; k = k, universe = universe)
+    raw = copy(domain_results[(year, universe, k)])
     raw[!, :election] = fill(Int(year), nrow(raw))
     select!(raw, :election, Not(:election))
     sort!(raw, [:election, :k, :left_index, :right_index, :gap_count, :omitted_party])
@@ -2104,9 +1722,8 @@ function strongest_tie_diagnostic(all_domains)
     return DataFrame(rows)
 end
 
-# Both universes are freshly enumerated, independently for each k. The full
-# party summary is always supplied, so V cannot change with the coalition domain.
-domain_results = Dict{Tuple{Int,Symbol,Int},DataFrame}()
+# Audit both previously enumerated universes against full party totals and
+# independent membership masks. No scientific quantity is re-enumerated here.
 summary_results = DataFrame[]
 for universe in ideological_universes
     active_audit_universe[] = universe
@@ -2147,10 +1764,6 @@ for universe in ideological_universes
     write_artifact_csv(joinpath(diagnostics_dir, "ideology_k_gap_strongest_inversion_ties$(suffix).csv"), ties, "diagnostic", "Strongest minimal inversion exact ties in $(universe).")
     if universe == primary_ideological_universe
         baseline = summary[summary.k .== 0, :]
-        baseline_latex_path = write_artifact_text(joinpath(latex_dir, "table_03_ideology_exact_connected_summary.tex"), Processing.ideology_exact_connected_summary_latex(summary), "latex", "Main-text exact-connected minimal winning parliamentary coalitions."; rows=nrow(baseline), columns=6)
-        sync_review_latex_asset(baseline_latex_path)
-        latex_path = write_artifact_text(joinpath(latex_dir, "table_03_ideology_k_gap_summary.tex"), Processing.ideology_k_gap_summary_latex(summary), "latex", "Appendix exact-connected versus one-gap robustness comparison."; rows=nrow(summary), columns=5)
-        sync_review_latex_asset(latex_path)
     end
 end
 ideology_k_gap_coalitions = vcat([domain_results[(year, primary_ideological_universe, k)] for year in analysis_years for k in (0, 1)]...)
@@ -2178,22 +1791,17 @@ for year in analysis_years, k in (0,1)
     record_k_gap_check!(year, k, "no_vote_renormalization", all(shared.vote_share .== shared.other_vote_share) && all(shared.seats .== shared.other_seats), "shared members imply identical vote shares and observed seats")
 end
 write_artifact_csv(joinpath(diagnostics_dir, "ideology_k_gap_checks.csv"), DataFrame(ideology_k_gap_check_rows), "diagnostic", "Both universes: order, domain membership, denominator, minimality, inversion, accounting and nesting checks.")
-include(joinpath(processing_root, "src", "ideological_robustness_table.jl"))
-comparison_latex = write_artifact_text(joinpath(latex_dir, "table_appendix_ideological_universe_comparison.tex"), ideological_universe_comparison_latex(ideology_universe_comparison), "latex", "Compact primary/all-party sensitivity table."; rows=12, columns=8)
-sync_review_latex_asset(comparison_latex)
 show_table(ideology_universe_comparison)
 
 ideological_interval_inversions_only = ideological_intervals_all_years[ideological_intervals_all_years.coalition_inversion .== true, :]
 minimal_connected_inversions = ideological_intervals_all_years[ideological_intervals_all_years.minimal_connected_inversion .== true, :]
 minimal_connected_inversion_metrics = add_metric_display_columns(minimal_connected_inversions)
-legacy_first_majority_sweeps = vcat(build_legacy_first_majority_sweep(2014, party_summary_2014, ideology_order_2014_base), build_legacy_first_majority_sweep(2018, party_summary_2018, ideology_order_2018_base), build_legacy_first_majority_sweep(2022, party_summary_2022, ideology_order_2022_base); cols = :union)
 write_artifact_csv(joinpath(raw_dir, "ideological_intervals_2014.csv"), ideological_intervals_2014, "raw", "All contiguous ideological intervals for 2014.")
 write_artifact_csv(joinpath(raw_dir, "ideological_intervals_2018.csv"), ideological_intervals_2018, "raw", "All contiguous ideological intervals for 2018.")
 write_artifact_csv(joinpath(raw_dir, "ideological_intervals_2022.csv"), ideological_intervals_2022, "raw", "All contiguous ideological intervals for 2022.")
 write_artifact_csv(joinpath(raw_dir, "ideological_interval_metrics.csv"), ideological_intervals_all_years, "raw", "Full-precision metrics and classifications for all contiguous ideological intervals.")
 write_artifact_csv(joinpath(raw_dir, "ideological_interval_inversions_only.csv"), ideological_interval_inversions_only, "raw", "Contiguous ideological interval coalition inversions only.")
 write_artifact_csv(joinpath(raw_dir, "minimal_connected_inversion_metrics.csv"), minimal_connected_inversion_metrics, "raw", "Julia-filtered minimal connected ideological inversions with full-precision and Julia-generated display metrics.")
-write_artifact_csv(joinpath(raw_dir, "legacy_first_majority_sweeps.csv"), legacy_first_majority_sweeps, "raw", "Legacy first-seat-majority sweep diagnostic, not the main ideological result.")
 
 for (name, df) in (
     ("ideological_interval_metrics", ideological_intervals_all_parties),
@@ -2237,11 +1845,7 @@ legacy_ideological_summary_csv_path = write_artifact_csv(
 minimal_inversion_table_csv_path = write_artifact_csv(joinpath(tables_dir, "table_06_minimal_ideological_interval_inversions.csv"), table_06_minimal_ideological_interval_inversions, "table", "Endpoint-minimal ideological interval inversions with rounded q_C, d_C, and r_C display columns.")
 minimal_inversion_table_from_csv = CSV.read(minimal_inversion_table_csv_path, DataFrame)
 validate_minimal_inversion_table!(minimal_inversion_table_from_csv, minimal_connected_inversions)
-minimal_inversion_tabular_path = write_artifact_text(joinpath(latex_dir, "table_04_minimal_connected_inversion_tabular.tex"), minimal_inversion_tabular_latex(minimal_inversion_table_from_csv), "latex", "CSV-driven tabularx for manuscript Table 4."; rows = nrow(minimal_inversion_table_from_csv), columns = 10)
-sync_review_latex_asset(minimal_inversion_tabular_path)
 minimal_connected_winning_csv_path = write_artifact_csv(joinpath(tables_dir, "table_appendix_minimal_connected_winning_intervals.csv"), table_appendix_minimal_connected_winning_intervals, "table", "Endpoint-minimal connected winning ideological intervals.")
-minimal_connected_winning_latex_path = write_artifact_text(joinpath(latex_dir, "table_appendix_minimal_connected_winning_intervals.tex"), minimal_connected_winning_latex(table_appendix_minimal_connected_winning_intervals), "latex", "Landscape longtable for endpoint-minimal connected winning ideological intervals."; rows = nrow(table_appendix_minimal_connected_winning_intervals), columns = 10)
-sync_review_latex_asset(minimal_connected_winning_latex_path)
 
 minimal_connected_diagnostic = combine(groupby(table_appendix_minimal_connected_winning_intervals, :election_year),
     nrow => :endpoint_minimal_connected_winning_intervals,
@@ -2251,7 +1855,6 @@ sort!(minimal_connected_diagnostic, :election_year)
 println("Endpoint-minimal connected winning interval diagnostic:")
 show_table(minimal_connected_diagnostic)
 println("Endpoint-minimal connected winning CSV written: ", minimal_connected_winning_csv_path)
-println("Endpoint-minimal connected winning LaTeX written: ", minimal_connected_winning_latex_path)
 minimal_connected_with_pt = table_appendix_minimal_connected_winning_intervals[table_appendix_minimal_connected_winning_intervals.contains_PT .== true, :]
 minimal_connected_inversion_with_pt = minimal_connected_with_pt[minimal_connected_with_pt.coalition_inversion .== true, :]
 println("PT is part of endpoint-minimal connected winning intervals: ", nrow(minimal_connected_with_pt) > 0 ? "YES" : "NO")
@@ -2380,32 +1983,17 @@ function ordered_party_rows(ideology_year_df, summary_year_df, parties)
 end
 
 function bridge_summarize_parties(summary_year_df, parties)
-    party_set = Set(String.(parties))
-    available = Set(String.(summary_year_df.party))
-    missing_parties = setdiff(sort(collect(party_set)), sort(collect(available)))
-    isempty(missing_parties) || error("Bridge party absent from election summary: $(join(missing_parties, ", "))")
-    mask = in.(String.(summary_year_df.party), Ref(party_set))
-    total_votes = sum(summary_year_df.votes)
-    coalition_votes = sum(summary_year_df.votes[mask])
-    coalition_seats = sum(summary_year_df.seats[mask])
-    vote_share = coalition_votes / total_votes
-    seat_share = coalition_seats / expected_total_seats
-    quota = expected_total_seats * vote_share
-    seat_diff = coalition_seats - quota
-    vote_majority = vote_share > 0.5
-    seat_majority = coalition_seats >= seat_majority_threshold
-    return (
-        votes = Int(coalition_votes),
-        vote_share = Float64(vote_share),
-        seats = Int(coalition_seats),
-        seat_share = Float64(seat_share),
-        quota = Float64(quota),
-        seat_diff = Float64(seat_diff),
-        vote_majority = Bool(vote_majority),
-        seat_majority = Bool(seat_majority),
-        majority_status = bridge_status(vote_share, coalition_seats),
-        coalition_inversion = Bool(seat_majority && !vote_majority),
-    )
+    totals = Processing.coalition_totals(summary_year_df, parties;
+        party_col = :party, vote_col = :votes, seat_col = :seats)
+    accounting = Processing.coalition_accounting_metrics(totals.votes, totals.seats;
+        national_vote_total = totals.national_vote_total, total_seats = totals.total_seats,
+        seat_majority_threshold)
+    return (votes = Int(totals.votes), vote_share = accounting.vote_share,
+        seats = Int(totals.seats), seat_share = accounting.seat_share,
+        quota = accounting.quota, seat_diff = accounting.seat_diff,
+        vote_majority = accounting.vote_majority, seat_majority = accounting.seat_majority,
+        majority_status = bridge_status(accounting.vote_share, totals.seats),
+        coalition_inversion = accounting.coalition_inversion)
 end
 
 function choose_closest_interval(cabinet_parties, candidate_intervals)
@@ -2464,36 +2052,6 @@ function add_closest_interval_fields!(row, prefix, closest)
     return row
 end
 
-function cabinet_bridge_latex(df)
-    io = IOBuffer()
-    println(io, "\\begin{landscape}")
-    println(io, raw"\fontsize{8}{9}\selectfont")
-    println(io, "\\setlength{\\tabcolsep}{1pt}")
-    println(io, "\\renewcommand{\\arraystretch}{1.08}")
-    println(io, "\\begin{longtable}{|l|l|L{0.10\\linewidth}|L{0.13\\linewidth}|L{0.11\\linewidth}|L{0.04\\linewidth}|L{0.13\\linewidth}|L{0.13\\linewidth}|L{0.11\\linewidth}|}")
-    println(io, "\\caption{Cabinet party sets and ideological intervals}\\label{tab:cabinet-interval-bridge}\\\\")
-    println(io, "\\hline")
-    println(io, "Election & Set & Cabinet & Ideology summary & Span & Gaps & Closure summary & Minimal winning & Minimal inversion \\\\")
-    println(io, "\\hline")
-    println(io, "\\endfirsthead")
-    println(io, "\\hline")
-    println(io, "Election & Set & Cabinet & Ideology summary & Span & Gaps & Closure summary & Minimal winning & Minimal inversion \\\\")
-    println(io, "\\hline")
-    println(io, "\\endhead")
-    for row in eachrow(df)
-        span = isempty(String(row.closure_start_party)) ? "" : "$(row.closure_start_party)--$(row.closure_end_party)"
-        gaps = string(row.closure_gap_n)
-        cabinet_cell = "$(row.cabinet_status); $(fmt2(row.cabinet_vote_share_pct))%; $(row.cabinet_seats) seats"
-        mcw = "$(row.closest_mcw_start_party)--$(row.closest_mcw_end_party); $(fmt_missing2(row.closest_mcw_vote_share_pct))%; $(row.closest_mcw_seats) seats; overlap $(row.closest_mcw_overlap_n); J=$(fmt_missing2(row.closest_mcw_jaccard))"
-        mci = isempty(String(row.closest_mci_start_party)) ? "none" : "$(row.closest_mci_start_party)--$(row.closest_mci_end_party); $(fmt_missing2(row.closest_mci_vote_share_pct))%; $(row.closest_mci_seats) seats; overlap $(row.closest_mci_overlap_n); J=$(fmt_missing2(row.closest_mci_jaccard))"
-        println(io, "$(row.election_year) & $(latex_escape(row.cabinet_period)) & $(latex_escape(cabinet_cell)) & $(latex_escape(row.cabinet_ideology_summary)) & $(latex_escape(span)) & $(latex_escape(gaps)) & $(latex_escape(row.closure_ideology_summary)) & $(latex_escape(mcw)) & $(latex_escape(mci)) \\\\")
-        println(io, "\\hline")
-    end
-    println(io, "\\end{longtable}")
-    println(io, "\\noindent One row per distinct election-year cabinet party set. Set labels refer to Appendix~\\ref{app:composition}; full occurrence linkage is retained in the replication CSVs.")
-    println(io, "\\end{landscape}")
-    return String(take!(io))
-end
 
 function build_cabinet_interval_bridge(cabinets, party_summary_all, ideology_order_all, intervals_all; universe = primary_ideological_universe)
     labels = sort(unique(String.(ideology_order_all.classification_label)))
@@ -2694,8 +2252,6 @@ chronology_bridge, _ = build_cabinet_interval_bridge(cabinet_chronology, party_s
 write_artifact_csv(joinpath(diagnostics_dir,"cabinet_interval_chronology.csv"),chronology_bridge,"diagnostic","Temporal cabinet transitions only; analytical comparisons use the distinct-set bridge.")
 table_appendix_cabinet_interval_bridge, cabinet_bridge_unmapped_warnings = build_cabinet_interval_bridge(observed_cabinet_coalitions_all_years, party_summary_bridge_all, ideology_order_all_years, ideological_intervals_all_years)
 cabinet_bridge_csv_path = write_artifact_csv(joinpath(tables_dir, "table_appendix_cabinet_interval_bridge.csv"), table_appendix_cabinet_interval_bridge, "table", "Observed cabinet coalitions compared with connected ideological closures and nearest minimal connected intervals.")
-cabinet_bridge_latex_path = write_artifact_text(joinpath(latex_dir, "table_appendix_cabinet_interval_bridge.tex"), cabinet_bridge_latex(table_appendix_cabinet_interval_bridge), "latex", "Landscape longtable comparing observed cabinet coalitions with connected ideological intervals."; rows = nrow(table_appendix_cabinet_interval_bridge), columns = 11)
-sync_review_latex_asset(cabinet_bridge_latex_path)
 write_artifact_csv(joinpath(tables_dir, "cabinet_interval_bridge_unidentified.csv"), cabinet_unidentified, "table", "Cabinet intervals excluded from ideological bridge because their complete set is unidentified.")
 
 chronology_bridge_all_parties, _ = build_cabinet_interval_bridge(cabinet_chronology, party_summary_bridge_all, ideology_order_all_parties, ideological_intervals_all_parties; universe=:all_parties)
@@ -2706,7 +2262,6 @@ write_artifact_csv(joinpath(tables_dir, "table_appendix_cabinet_interval_bridge_
 cabinet_bridge_unmapped_count = sum(table_appendix_cabinet_interval_bridge.unmapped_cabinet_parties .!= "")
 closure_inversion_count = sum((table_appendix_cabinet_interval_bridge.closure_vote_share .< 0.5) .& (table_appendix_cabinet_interval_bridge.closure_seats .>= seat_majority_threshold))
 println("Cabinet-interval bridge CSV written: ", cabinet_bridge_csv_path)
-println("Cabinet-interval bridge LaTeX written: ", cabinet_bridge_latex_path)
 println("Cabinet party sets processed: ", nrow(table_appendix_cabinet_interval_bridge))
 println("Cabinet party sets with unmapped ideology parties: ", cabinet_bridge_unmapped_count)
 if !isempty(cabinet_bridge_unmapped_warnings)
@@ -2768,14 +2323,12 @@ party_mapping_votes = vcat_or_empty(vote_mapping_tables)
 party_mapping_seats = vcat_or_empty(seat_mapping_tables)
 party_mapping_coalitions = vcat_or_empty(coalition_mapping_tables)
 party_mapping_ideology = vcat_or_empty(ideology_mapping_tables)
-cabinet_translation_report = vcat_or_empty(cabinet_translation_tables)
 audit_appendix_vote_columns_and_crosswalk = copy(table_07_audit_vote_columns_crosswalk)
 write_artifact_csv(joinpath(diagnostics_dir, "party_mapping_votes.csv"), party_mapping_votes, "diagnostic", "Raw-to-canonical party mapping for vote inputs.")
 write_artifact_csv(joinpath(diagnostics_dir, "party_mapping_seats.csv"), party_mapping_seats, "diagnostic", "Raw-to-canonical party mapping for seat inputs.")
 write_artifact_csv(joinpath(diagnostics_dir, "party_mapping_coalitions.csv"), party_mapping_coalitions, "diagnostic", "Raw-to-canonical party mapping for coalition inputs.")
 write_artifact_csv(joinpath(diagnostics_dir, "party_mapping_ideology.csv"), party_mapping_ideology, "diagnostic", "Raw-to-canonical party mapping for ideology inputs.")
 write_artifact_csv(joinpath(diagnostics_dir, "vote_column_consistency.csv"), vote_column_consistency, "diagnostic", "Vote-column selection and consistency checks.")
-write_artifact_csv(joinpath(diagnostics_dir, "cabinet_translation_report.csv"), cabinet_translation_report, "diagnostic", "Cabinet-party to election-party translation report.")
 write_artifact_csv(joinpath(diagnostics_dir, "audit_appendix_vote_columns_and_crosswalk.csv"), audit_appendix_vote_columns_and_crosswalk, "diagnostic", "Appendix-ready vote-column and crosswalk audit extract.")
 println("Diagnostics written. Preflight and coalition-period linkage were written in their own blocks.")
 

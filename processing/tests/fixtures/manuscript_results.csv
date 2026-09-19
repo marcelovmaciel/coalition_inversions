@@ -1,0 +1,93 @@
+block,key,field,value
+abstract-compact-inversion,election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL,party_count,7
+abstract-compact-inversion,election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL,vote_share,0.4526056142903306
+abstract-compact-inversion,election=2022; ideological_universe=seat_winning; k=0; coalition_id=PP|REPUBLICANOS|PSC|UNIÃO|PATRIOTA|NOVO|PL,seats,258
+abstract-compact-inversion,election_year=2014,inverted_sets,1
+abstract-compact-inversion,election_year=2018,inverted_sets,0
+abstract-compact-inversion,election_year=2022,inverted_sets,1
+district-magnitudes,summary=eight-seat-districts; metric=count; aggregation=sum,value,11
+district-magnitudes,summary=district-magnitude; metric=S_d; aggregation=median,value,10.0
+district-magnitudes,summary=district-magnitude; metric=S_d; aggregation=mean,value,19.0
+cabinet-set-construction,election_year=2014,distinct_sets,12
+cabinet-set-construction,election_year=2014,analytical_periods,20
+cabinet-set-construction,election_year=2014,observed_days,1461
+cabinet-set-construction,election_year=2018,distinct_sets,18
+cabinet-set-construction,election_year=2018,analytical_periods,20
+cabinet-set-construction,election_year=2018,observed_days,1461
+cabinet-set-construction,election_year=2022,distinct_sets,5
+cabinet-set-construction,election_year=2022,analytical_periods,13
+cabinet-set-construction,election_year=2022,observed_days,1174
+cabinet-evidence-and-duration,election_year=all,observed_days,4096
+cabinet-evidence-and-duration,election_year=all,established_days,3996
+cabinet-evidence-and-duration,election_year=all,provisional_days,100
+cabinet-evidence-and-duration,election_year=all,inversion_days,260
+cabinet-evidence-and-duration,election_year=all,provisional_only_sets,1
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,canonical_membership,PCdoB;PDT;PMDB;PR;PSD;PT;PTB
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,display_label,14-05
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,q_C,238.7289078420895
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,A_C,15.742022264747815
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,B_C,4.529069893162678
+cabinet-decomposition-thresholds,election_year=2014; cabinet_party_set_id=C2014-a264923b9881ebab3d9b,seats,259
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,canonical_membership,MDB;PCdoB;PDT;PSB;PSD;PSOL;PT;REDE;UNIÃO
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,display_label,22-01
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,q_C,250.79566134558084
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,A_C,13.196247377886202
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,B_C,-0.9919087234670415
+cabinet-decomposition-thresholds,election_year=2022; cabinet_party_set_id=C2022-259238bde0cf94feb03e,seats,263
+ideological-k0-summary,election=2014; ideological_universe=seat_winning; k=0,minimal_inversions,4
+ideological-k0-summary,election=2014; ideological_universe=seat_winning; k=0,minimal_seat_majority_coalitions,8
+ideological-k0-summary,election=2014; ideological_universe=seat_winning; k=0,ideological_party_count,28
+ideological-k0-summary,election=2018; ideological_universe=seat_winning; k=0,minimal_inversions,1
+ideological-k0-summary,election=2018; ideological_universe=seat_winning; k=0,minimal_seat_majority_coalitions,8
+ideological-k0-summary,election=2018; ideological_universe=seat_winning; k=0,ideological_party_count,30
+ideological-k0-summary,election=2022; ideological_universe=seat_winning; k=0,minimal_inversions,2
+ideological-k0-summary,election=2022; ideological_universe=seat_winning; k=0,minimal_seat_majority_coalitions,4
+ideological-k0-summary,election=2022; ideological_universe=seat_winning; k=0,ideological_party_count,23
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,party_count,14
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,vote_share,0.4995104320302238
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,seats,267
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,q_C,256.24885163150481
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,d_C,10.751148368495176
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0; coalition_id=PT|PDT|PSB|REDE|PPS|PV|PTB|AVANTE|SOLIDARIEDADE|PMN|PHS|MDB|PSD|PSDB,R_C,1.0419558889729414
+ideological-k0-2018,election=2018; ideological_universe=seat_winning; k=0,non_inverted_minimal_majorities,7
+ideological-k0-2018,election_year=2018,inverted_sets,0
+appendix-compact-domain-totals,summary=seat-winning-k0-totals; metric=minimal_seat_majority_coalitions; aggregation=sum,value,20
+appendix-compact-domain-totals,summary=seat-winning-k1-surviving-connected; metric=count; aggregation=sum,value,6
+appendix-compact-domain-totals,election=2014; ideological_universe=seat_winning; k=1,minimal_seat_majority_coalitions,87
+appendix-compact-domain-totals,election=2014; ideological_universe=seat_winning; k=1,minimal_inversions,46
+appendix-compact-domain-totals,election=2018; ideological_universe=seat_winning; k=1,minimal_seat_majority_coalitions,108
+appendix-compact-domain-totals,election=2018; ideological_universe=seat_winning; k=1,minimal_inversions,42
+appendix-compact-domain-totals,election=2022; ideological_universe=seat_winning; k=1,minimal_seat_majority_coalitions,39
+appendix-compact-domain-totals,election=2022; ideological_universe=seat_winning; k=1,minimal_inversions,12
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=all,value,100
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=all,value,77
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2014,value,46
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2014,value,40
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2018,value,42
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2018,value,32
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=minimal_inversions; aggregation=count; ideological_universe=seat_winning; k=1; election=2022,value,12
+appendix-compact-component-frequencies,summary=ideology-component-dominance; metric=A_C_gt_B_C; aggregation=count; ideological_universe=seat_winning; k=1; election=2022,value,5
+appendix-compact-component-frequencies,summary=seat-winning-k1-negative-within; metric=A_C; aggregation=count_negative,value,3
+appendix-compact-component-frequencies,summary=seat-winning-2014-k1-negative-within; metric=A_C; aggregation=count_negative,value,2
+appendix-compact-component-frequencies,summary=seat-winning-2022-k1-negative-within; metric=A_C; aggregation=count_negative,value,1
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,parties,"MDB, PSDB, PSD, PODE, PROS, PTB, PP, REPUBLICANOS, PSC, UNIÃO"
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,vote_share,0.492189812614362
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,seats,265
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,A_C,2.9531634698279121
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,B_C,9.5534626590043707
+appendix-compact-mdb-uniao,election=2022; ideological_universe=seat_winning; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,inversion,true
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,parties,"MDB, PMN, PSDB, PSD, PMB, PODE, PROS, PRTB, AGIR, PTB, PP, DC, REPUBLICANOS, PSC, UNIÃO"
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,vote_share,0.49982222487556105
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,seats,265
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,A_C,-1.2923532538854881
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,B_C,9.8835518927226591
+appendix-compact-mdb-uniao,election=2022; ideological_universe=all_parties; k=0; left_endpoint=MDB; right_endpoint=UNIÃO,inversion,true
+party-size-and-differential-ranks,election_year=2014,largest_vote_parties,PT
+party-size-and-differential-ranks,election_year=2014,largest_differential_parties,PMDB
+party-size-and-differential-ranks,election_year=2014,smallest_differential_parties,PSDB
+party-size-and-differential-ranks,election_year=2018,largest_vote_parties,PSL
+party-size-and-differential-ranks,election_year=2018,largest_differential_parties,PP
+party-size-and-differential-ranks,election_year=2018,smallest_differential_parties,PSL
+party-size-and-differential-ranks,election_year=2022,largest_vote_parties,PL
+party-size-and-differential-ranks,election_year=2022,largest_differential_parties,PL
+party-size-and-differential-ranks,election_year=2022,smallest_differential_parties,PSOL

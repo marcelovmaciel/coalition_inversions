@@ -1,5 +1,0 @@
-"election","n","size_variable","pearson_vote_share_A_i","pearson_vote_share_A_over_q","spearman_vote_share_A_i","spearman_vote_share_A_over_q"
-"2014",32,"national vote share (q_i has identical correlations)",0.4548219051217848,0.5059330387444682,0.4750733137829912,0.623533724340176
-"2018",35,"national vote share (q_i has identical correlations)",0.5204787629284205,0.6467504811579126,0.40756302521008403,0.780952380952381
-"2022",32,"national vote share (q_i has identical correlations)",0.809956580188237,0.7075851857962917,0.1499266862170088,0.8031524926686217
-"pooled",99,"national vote share (q_i has identical correlations)",0.6336150950811177,0.6093429436808256,0.3825726654298083,0.7737167594310451

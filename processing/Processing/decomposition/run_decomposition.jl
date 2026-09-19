@@ -15,26 +15,18 @@ using Processing
 
 include(joinpath(DECOMPOSITION_DIR, "CoalitionDecomposition.jl"))
 using .CoalitionDecomposition
-include(joinpath(DECOMPOSITION_DIR, "IntermediateAccountingReport.jl"))
-using .IntermediateAccountingReport
+include(joinpath(DECOMPOSITION_DIR, "AccountingEvidence.jl"))
+using .AccountingEvidence
 include(joinpath(DECOMPOSITION_DIR, "AccountingIntegration.jl"))
 using .AccountingIntegration
 include(joinpath(DECOMPOSITION_DIR, "DualUniverseAccounting.jl"))
 include(joinpath(DECOMPOSITION_DIR, "ProseSummaries.jl"))
 using .ProseSummaries
 
-const PAPER_ROOT = joinpath(PROCESSING_ROOT, "output", "paper")
-const OUTPUT_ROOT = joinpath(PROCESSING_ROOT, "output", "decomposition")
-const REVIEW_MANUSCRIPT_DIR = joinpath(
-    REPO_ROOT,
-    "writing",
-    "submission_inversions_review",
-    "manuscript",
-)
+const PAPER_ROOT = joinpath(REPO_ROOT, "build", "results", "domains")
+const OUTPUT_ROOT = joinpath(REPO_ROOT, "build", "results", "accounting")
 const DATA_ROOT = joinpath(REPO_ROOT, "data", "raw", "electionsBR")
 const ALLOW_OVERWRITE = lowercase(get(ENV, "ALLOW_OVERWRITE", "false")) in
-    ("1", "true", "yes")
-const SYNC_REVIEW_ASSETS = lowercase(get(ENV, "SYNC_REVIEW_ASSETS", "true")) in
     ("1", "true", "yes")
 const EXPECTED_NATIONAL_VOTES = Dict(
     2014 => 97_355_354,
@@ -55,136 +47,6 @@ end
 function require_file(path::AbstractString)
     isfile(path) || error("Required corrected-baseline input is missing: $(path)")
     return path
-end
-
-const ACCOUNTING_ARTIFACT_PREFIXES = (
-    "tables/manuscript_values.",
-    "latex/manuscript_values.",
-    "manuscript_values.",
-    "tables/prose_analysis_summaries.",
-    "raw/accounting_",
-    "tables/table_accounting_",
-    "figure_data/accounting_",
-    "latex/accounting_",
-    "latex/table_accounting_",
-    "accounting_",
-    "table_accounting_",
-    "raw/coalition_party_contribution",
-    "tables/table_coalition_party_contribution",
-    "latex/table_coalition_party_contribution",
-    "coalition_party_contribution",
-    "table_coalition_party_contribution",
-    "tables/table_coalition_party_component",
-    "latex/table_coalition_party_component",
-    "table_coalition_party_component",
-)
-
-function is_accounting_integration_artifact(relative_path::AbstractString)
-    normalized = replace(String(relative_path), '\\' => '/')
-    normalized = replace(normalized, r"^all_parties/" => "")
-    return any(prefix -> startswith(normalized, prefix), ACCOUNTING_ARTIFACT_PREFIXES)
-end
-
-function prune_stale_accounting_artifacts!(root::AbstractString, allowed_paths::Set{String})
-    isdir(root) || return
-    for (directory, _, filenames) in walkdir(root)
-        for filename in filenames
-            path = joinpath(directory, filename)
-            relative = replace(relpath(path, root), '\\' => '/')
-            if is_accounting_integration_artifact(relative) && !(relative in allowed_paths)
-                rm(path; force = true)
-            end
-        end
-    end
-end
-
-
-function update_manifest!(manifest_path::AbstractString, additions::DataFrame)
-    manifest = CSV.read(require_file(manifest_path), DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-    required = Set([:path, :artifact_type, :description, :rows, :columns])
-    required ⊆ Set(propertynames(manifest)) || error(
-        "Paper artifact manifest schema changed: $(propertynames(manifest)).",
-    )
-    addition_paths = Set(String.(additions.path))
-    filter!(row -> begin
-        path = String(row.path)
-        path != "artifact_manifest.csv" &&
-            !is_accounting_integration_artifact(path) &&
-            !(path in addition_paths)
-    end, manifest)
-    append!(manifest, select(additions, :path, :artifact_type, :description, :rows, :columns))
-    push!(manifest, (
-        path = "artifact_manifest.csv",
-        artifact_type = "manifest",
-        description = "Manifest of every generated paper-runner and decomposition artifact.",
-        rows = nrow(manifest) + 1,
-        columns = 5,
-    ))
-    CSV.write(manifest_path, manifest)
-    return manifest
-end
-
-function sync_decomposition_to_paper!(manifest::DataFrame)
-    paper_records = NamedTuple[]
-    for row in eachrow(manifest)
-        relative = String(row.path)
-        startswith(relative, "audit/") && continue
-        source = joinpath(OUTPUT_ROOT, relative)
-        destination = joinpath(PAPER_ROOT, relative)
-        mkpath(dirname(destination))
-        cp(source, destination; force = true)
-        push!(paper_records, (
-            path = relative,
-            artifact_type = String(row.artifact_type),
-            description = String(row.description),
-            rows = row.rows,
-            columns = row.columns,
-        ))
-    end
-
-    validation_source = joinpath(OUTPUT_ROOT, "audit", "decomposition_identity_checks.csv")
-    validation_relative = joinpath("diagnostics", "decomposition_identity_checks.csv")
-    validation_destination = joinpath(PAPER_ROOT, validation_relative)
-    mkpath(dirname(validation_destination))
-    cp(validation_source, validation_destination; force = true)
-    validation = CSV.read(validation_source, DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-    push!(paper_records, (
-        path = validation_relative,
-        artifact_type = "diagnostic",
-        description = "Exact and floating-point decomposition identity results.",
-        rows = nrow(validation),
-        columns = length(names(validation)),
-    ))
-
-    paper_additions = DataFrame(paper_records)
-    paper_manifest = update_manifest!(joinpath(PAPER_ROOT, "artifact_manifest.csv"), paper_additions)
-    prune_stale_accounting_artifacts!(PAPER_ROOT, Set(String.(paper_manifest.path)))
-
-    if SYNC_REVIEW_ASSETS
-        isdir(REVIEW_MANUSCRIPT_DIR) || error(
-            "Review manuscript directory not found: $(REVIEW_MANUSCRIPT_DIR)",
-        )
-        review_filenames = (
-            "table_observed_inversion_decomposition.tex",
-            "table_inversion_party_contribution_extremes.tex",
-            "table_cabinet_district_concentration.tex",
-            "table_accounting_focal_cases.tex",
-            "table_accounting_gross_components.tex",
-            "table_accounting_selected_party_geography.tex",
-            "table_accounting_minimal_ideological.tex",
-            "table_accounting_minimal_ideological_all_parties.tex",
-            "table_coalition_party_contributions.tex",
-            "table_coalition_party_component_extremes.tex",
-        )
-        for filename in review_filenames
-            source = joinpath(OUTPUT_ROOT, "latex", filename)
-            cp(source, joinpath(REVIEW_MANUSCRIPT_DIR, filename); force = true)
-        end
-        review_allowed = Set(String.(review_filenames))
-        push!(review_allowed, "accounting_state_weighting_anatomy.pdf")
-        prune_stale_accounting_artifacts!(REVIEW_MANUSCRIPT_DIR, review_allowed)
-    end
-    return paper_additions
 end
 
 function append_output_manifest_rows!(rows::AbstractVector{<:NamedTuple})
@@ -267,66 +129,31 @@ for (name,frame) in (("party",all_set_vectors.party_contributions),("district",a
     push!(party_size_artifacts,(path=relative,artifact_type="raw",description="One cabinet-set/member or cabinet-set/district vector; occurrence linkage is separate.",rows=nrow(frame),columns=ncol(frame),sha256=sha256_file(path)))
 end
 
+# One exact national result per member set, shared by both domains and all
+# published finite cabinet calendars. Consumers join their domain identities.
+canonical_relative = "raw/coalition_accounting.csv.gz"
+canonical_path = joinpath(OUTPUT_ROOT, canonical_relative)
+canonical_accounting = write_coalition_accounting(canonical_path,
+    joinpath(PAPER_ROOT, "raw", "ideology_k_gap_coalitions_both_universes.csv"),
+    joinpath(REPO_ROOT, "data", "cabinet"), accounting_by_year)
+push!(party_size_artifacts, (path=canonical_relative, artifact_type="raw",
+    description="Canonical exact coalition quantities keyed by election and membership; domains and calendars join this table.",
+    rows=nrow(canonical_accounting), columns=ncol(canonical_accounting), sha256=sha256_file(canonical_path)))
+
 robustness_artifacts, dual_universe_paper_artifacts = DualUniverseAccounting.write_dual_universe_outputs(
     PAPER_ROOT, OUTPUT_ROOT, coalition_sets, accounting_by_year,
 )
 
 
-input_paths = [
-    observed_path,
-    joinpath(REPO_ROOT, "generated", "cabinet_party_sets", "identity.csv"),
-    joinpath(REPO_ROOT, "generated", "cabinet_party_sets", "period_linkage.csv"),
-    joinpath(REPO_ROOT, "processing", "cabinet_party_sets.py"),
-    joinpath(REPO_ROOT, "processing", "cabinet_v5.py"),
-    party_path,
-    ideology_input_path,
-    joinpath(PAPER_ROOT, "raw", "ideological_interval_metrics_all_parties.csv"),
-    joinpath(DECOMPOSITION_DIR, "DualUniverseAccounting.jl"),
-    joinpath(DECOMPOSITION_DIR, "cross_domain_components.py"),
-    joinpath(DECOMPOSITION_DIR, "CoalitionDecomposition.jl"),
-    joinpath(DECOMPOSITION_DIR, "IntermediateAccountingReport.jl"),
-    joinpath(DECOMPOSITION_DIR, "PartySizeDiagnostics.jl"),
-    joinpath(DECOMPOSITION_DIR, "AccountingIntegration.jl"),
-    joinpath(DECOMPOSITION_DIR, "CabinetDistrictTable.jl"),
-    joinpath(DECOMPOSITION_DIR, "PartyComponentTable.jl"),
-    joinpath(DECOMPOSITION_DIR, "ProseSummaries.jl"),
-    joinpath(DECOMPOSITION_DIR, "validate_prose_provenance.py"),
-    joinpath(DECOMPOSITION_DIR, "audit_empirical_assets.py"),
-    joinpath(DECOMPOSITION_DIR, "run_decomposition.jl"),
-    joinpath(PROCESSING_ROOT, "..", "rebuild_manuscript.sh"),
-    joinpath(DECOMPOSITION_DIR, "report", "intermediate_accounting_report.tex"),
-    joinpath(DECOMPOSITION_DIR, "report", "build_report.sh"),
-    joinpath(PROCESSING_ROOT, "psc_baseline_repair", "POST_PSC_BASELINE.md"),
-    joinpath(PROCESSING_ROOT, "psc_baseline_repair", "post_psc_baseline_manifest.csv"),
-]
-for year in sort(collect(keys(EXPECTED_NATIONAL_VOTES)))
-    append!(input_paths, [
-        joinpath(DATA_ROOT, string(year), "party_mun_zone.csv"),
-        joinpath(DATA_ROOT, string(year), "candidate.csv"),
-        joinpath(DATA_ROOT, string(year), "seats.csv"),
-    ])
-end
-input_manifest = DataFrame([
-    (
-        path = relpath(require_file(path), REPO_ROOT),
-        bytes = filesize(path),
-        sha256 = sha256_file(path),
-    ) for path in input_paths
-])
-sort!(input_manifest, :path)
-input_manifest_path = joinpath(OUTPUT_ROOT, "audit", "decomposition_input_manifest.csv")
-CSV.write(input_manifest_path, input_manifest)
-
 # Reuse the loaded exact accounting panels for every standalone diagnostic
 # report output. This keeps the main rebuild complete without rereading TSE
 # inputs or repeating the both-universe enumeration/export stage.
 report_cases = decompose_case_registry(case_registry, accounting_by_year)
-validate_cabinet_compatibility!(report_cases, outputs)
 report_rankings = build_case_rankings(report_cases)
-report_manifest = write_intermediate_report_outputs(
+report_manifest = write_accounting_evidence_outputs(
     OUTPUT_ROOT, full_accounting, case_registry, report_cases, report_rankings;
-    input_manifest = input_manifest,
     party_size_diagnostics = party_size_diagnostics,
+    party_size_artifacts = party_size_artifacts,
 )
 
 
@@ -341,19 +168,12 @@ manifest = append_output_manifest_rows!(vcat(integration_artifacts, party_size_a
         columns = length(names(ideological_regression)),
         sha256 = sha256_file(ideological_audit_path),
     ),
-    (
-        path = "audit/decomposition_input_manifest.csv",
-        artifact_type = "audit",
-        description = "SHA-256 provenance for corrected-baseline and district inputs.",
-        rows = nrow(input_manifest),
-        columns = length(names(input_manifest)),
-        sha256 = sha256_file(input_manifest_path),
-    ),
 ]))
 
-prune_stale_accounting_artifacts!(OUTPUT_ROOT, Set(String.(manifest.path)))
-paper_additions = sync_decomposition_to_paper!(manifest)
-update_manifest!(joinpath(PAPER_ROOT, "artifact_manifest.csv"), vcat(paper_additions, dual_universe_paper_artifacts))
+# Register only tables actually produced here; no result or presentation mirrors.
+paper_manifest = CSV.read(joinpath(PAPER_ROOT, "artifact_manifest.csv"), DataFrame)
+append!(paper_manifest, dual_universe_paper_artifacts)
+CSV.write(joinpath(PAPER_ROOT, "artifact_manifest.csv"), paper_manifest)
 
 println("Recovered inversion cases:")
 for row in eachrow(outputs.decomposition)
@@ -371,4 +191,4 @@ println("Party-size diagnostics: ", nrow(party_size_diagnostics.parties), " part
     nrow(party_size_diagnostics.cabinet_sets), " distinct translated sets.")
 println("Focal accounting vectors: ", nrow(accounting_integration.focal.total))
 println("Generated decomposition artifacts: ", nrow(manifest))
-println("Synchronized paper artifacts: ", nrow(paper_additions))
+

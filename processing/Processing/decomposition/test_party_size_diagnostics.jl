@@ -1,9 +1,9 @@
 using Test, CSV, DataFrames, Dates, JSON3
 
-include(joinpath(@__DIR__, "IntermediateAccountingReport.jl"))
-using .IntermediateAccountingReport
-const PSDIAG = IntermediateAccountingReport
-const SIZE_TEST_RAW = joinpath(@__DIR__, "..", "output", "decomposition", "raw")
+include(joinpath(@__DIR__, "AccountingEvidence.jl"))
+using .AccountingEvidence
+const PSDIAG = AccountingEvidence
+const SIZE_TEST_RAW = joinpath(@__DIR__, "..", "..", "..", "build", "results", "accounting", "raw")
 size_test_exact(s) = map(x -> parse(BigInt, x), split(s, "//")) |> x -> x[1]//x[2]
 
 # Reconstitute the already-generated exact objects for fast unit/regression
@@ -20,7 +20,8 @@ function size_test_accounting(parties, cells)
             votes = c.v_id, seats = c.s_id, district_votes = c.V_d, district_seats = c.S_d,
             a_exact = size_test_exact.(c.a_id_exact), b_exact = size_test_exact.(c.b_id_exact))
         result[year] = (party = party, panel = panel, district = unique(select(panel, :district)),
-            national_votes = first(p.V), national_seats = 513, year = year)
+            national_votes = first(p.V), national_seats = Int(first(p.S)),
+            seat_majority_threshold = fld(Int(first(p.S)), 2) + 1, year = year)
     end
     return result
 end
@@ -37,22 +38,9 @@ end
     @test all(isequal(accounting[y].party, source_before[y].party) && isequal(accounting[y].panel, source_before[y].panel) for y in keys(accounting))
     @test isequal(parties, original_parties) # persisted panel matches a fresh build
     @test all(diagnostic.checks.passed)
-    @test Set(diagnostic.checks.check_kind) == Set(["accounting_identity", "frozen_data_regression"])
     @test nrow(diagnostic.period_linkage) == nrow(periods)
     @test nrow(diagnostic.cabinet_sets) == length(unique(diagnostic.period_linkage.cabinet_party_set_id))
     @test length(unique(diagnostic.period_linkage.coalition_id)) == nrow(periods)
-    for (field, path) in ((:cabinet_sets, "raw/cabinet_party_set_accounting.csv"),
-            (:period_linkage, "raw/cabinet_party_set_period_linkage.csv"),
-            (:cabinet_size, "tables/report/party_size_cabinet_summary.csv"),
-            (:correlations, "tables/report/party_size_correlations.csv"),
-            (:size_groups, "tables/report/party_size_groups.csv"))
-        saved = CSV.read(joinpath(SIZE_TEST_RAW, "..", path), DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-        @test names(saved) == names(diagnostic[field])
-        @test nrow(saved) == nrow(diagnostic[field])
-        for col in names(saved)
-            @test all(isequal(a, b) || (a isa Date && string(a) == b) for (a, b) in zip(diagnostic[field][!, col], saved[!, col]))
-        end
-    end
     for r in eachrow(diagnostic.period_linkage)
         set = only(eachrow(diagnostic.cabinet_sets[diagnostic.cabinet_sets.cabinet_party_set_id .== r.cabinet_party_set_id, :]))
         member_names = Set(strip.(split(set.coalition_parties, ",")))
@@ -73,7 +61,7 @@ end
     end
     # The release adapter is the chronology authority; compare the identified
     # registry membership and dates, preserving the full-calendar denominator.
-    current = CSV.read(joinpath(@__DIR__, "..", "output", "paper", "raw", "cabinet_coalition_metrics.csv"), DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
+    current = CSV.read(joinpath(@__DIR__, "..", "..", "..", "build", "results", "domains", "raw", "cabinet_coalition_metrics.csv"), DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
     @test nrow(current) == nrow(periods)
     @test Set(String.(periods.source_periods)) == Set(String.(current.source_periods))
     for year in (2014, 2018, 2022)
@@ -120,7 +108,7 @@ end
 @testset "Effective party numbers use the existing exact shares" begin
     synthetic = DataFrame(election_year = [2014, 2014], v_i = [50, 50], V = [100, 100],
         s_i = [75, 25], S = [100, 100])
-    summary = IntermediateAccountingReport.party_fragmentation_summary(synthetic)
+    summary = AccountingEvidence.party_fragmentation_summary(synthetic)
     @test only(summary.effective_electoral) == 2.0
     @test only(summary.effective_parliamentary) == 1.6
     @test only(summary.effective_parliamentary_exact) == "8//5"

@@ -1,4 +1,4 @@
-# Included in IntermediateAccountingReport: these are views of the established
+# Included in AccountingEvidence: these are views of the established
 # exact accounting objects, never an alternative electoral/cabinet calculation.
 const PARTY_SIZE_BENCHMARK = 5 // 100
 const PARTY_SIZE_NOTE = "5% is a descriptive national-vote benchmark, not an electoral threshold or theoretical cutoff."
@@ -116,7 +116,6 @@ function build_party_size_diagnostics!(parties::DataFrame, periods::DataFrame, a
     end
     counts = Dict(k => 0 for k in keys(source))
     days = copy(counts)
-    raw_counts = copy(counts)
     identity = CD.Processing.cabinet_set_identity()
     registry = Dict((Int(r.election_year), String(r.canonical_membership)) => NamedTuple(r) for r in eachrow(identity))
     sets = Dict{String,Any}()
@@ -128,17 +127,14 @@ function build_party_size_diagnostics!(parties::DataFrame, periods::DataFrame, a
         reg = registry[year, join(names, ";")]
         set_id = reg.cabinet_party_set_id
         members = [source[year, name] for name in names]
-        source_periods = String.(JSON3.read(String(period.source_periods)))
         for name in names
             counts[year, name] += !haskey(sets, set_id)
             days[year, name] += Int(period.days_overlapping_mandate)
-            raw_counts[year, name] += length(source_periods)
         end
-        A = sum((r.A_exact for r in members); init = CD.exact_fraction(0, 1))
-        B = sum((r.B_exact for r in members); init = CD.exact_fraction(0, 1))
-        q = sum((r.quota_exact for r in members); init = CD.exact_fraction(0, 1))
         a = accounting_by_year[year]
-        district = [CD.exact_coalition_district(a, names, String(d)) for d in a.district.district]
+        values_C = CD.coalition_accounting(a, names; include_districts=true)
+        A, B, q = values_C.A, values_C.B, values_C.q
+        district = values_C.districts
         check("$(period.coalition_id) member A equals district A_C", A, sum(d.a_exact for d in district))
         check("$(period.coalition_id) member B equals district B_C", B, sum(d.b_exact for d in district))
         check("$(period.coalition_id) coalition A+B closure", A+B, CD.exact_fraction(period.s_C, 1)-q)
@@ -215,11 +211,10 @@ function build_party_size_diagnostics!(parties::DataFrame, periods::DataFrame, a
     parties[!, :cabinet_observation_count] = [counts[k] for k in keys_in_order]
     parties[!, :cabinet_distinct_set_count] = [counts[k] for k in keys_in_order]
     parties[!, :cabinet_analytical_period_count] = [count(r -> r.election_year==k[1] && k[2] in ordered_parties(r.coalition_parties), eachrow(periods)) for k in keys_in_order]
-    parties[!, :cabinet_source_period_count] = [raw_counts[k] for k in keys_in_order]
     parties[!, :cabinet_days] = [days[k] for k in keys_in_order]
     primary_days = Dict(y => sum(periods.days_overlapping_mandate[periods.election_year .== y])
                           for y in keys(accounting_by_year))
-    v5_calendar = CSV.read(joinpath(@__DIR__, "..", "..", "..", "generated", "cabinet_v5", "cabinet_analysis_periods.csv"), DataFrame)
+    v5_calendar = CSV.read(joinpath(@__DIR__, "..", "..", "..", "build", "results", "cabinet", "cabinet_analysis_periods.csv"), DataFrame)
     identified_days = Dict(y => sum(v5_calendar.established_days[v5_calendar.election_year .== y]) for y in keys(accounting_by_year))
     parties[!, :primary_covered_cabinet_days] = [primary_days[k[1]] for k in keys_in_order]
     parties[!, :provisional_cabinet_days] = [primary_days[k[1]]-identified_days[k[1]] for k in keys_in_order]
@@ -273,70 +268,6 @@ function build_party_size_diagnostics!(parties::DataFrame, periods::DataFrame, a
     return merge(diagnostic, (checks = vcat(DataFrame(checks), regressions),))
 end
 
-function party_size_report_latex(d)
-    io = IOBuffer()
-    println(io, raw"\noindent These are descriptive accounting comparisons, not a causal model of cabinet formation or of party-size effects. Each pooled observation is one election-year party, equally weighted. Cabinet membership uses all V5 primary sets, including 100 flagged provisional days. The underlying unknown affiliations remain unresolved; an absent party could be represented under an unbounded alternative on those dates. The 5\% benchmark is descriptive only, not an electoral threshold or theoretical cutoff. Since $q_i=513v_i/V$, vote share and $q_i$ have identical correlations. Ratios are dimensionless; $A_i$ is measured in seats.")
-    println(io, longtable_latex(d.cabinet_size; caption = "Party size by cabinet participation", label = "tab:report-party-size-cabinet",
-        column_spec = "llrrrrr", headers = ("Election", "Ever cabinet", "n", "Mean vote \\%", "Median vote \\%", "Mean q", "Median q"),
-        renderers = (r -> r.election, r -> r.ever_in_cabinet ? "Yes" : "No", r -> string(r.n),
-            r -> ismissing(r.mean_vote_share) ? "---" : fmtpct(r.mean_vote_share), r -> ismissing(r.median_vote_share) ? "---" : fmtpct(r.median_vote_share), r -> ismissing(r.mean_q_i) ? "---" : fmt2(r.mean_q_i), r -> ismissing(r.median_q_i) ? "---" : fmt2(r.median_q_i))))
-    println(io, longtable_latex(d.correlations; caption = "Party-size associations", label = "tab:report-party-size-correlations",
-        column_spec = "lrrrrr", headers = ("Election", "n", "Pearson A", "Pearson A/q", "Spearman A", "Spearman A/q"),
-        renderers = (r -> r.election, r -> string(r.n), r -> fmt3(r.pearson_vote_share_A_i), r -> fmt3(r.pearson_vote_share_A_over_q),
-            r -> fmt3(r.spearman_vote_share_A_i), r -> fmt3(r.spearman_vote_share_A_over_q))))
-    println(io, longtable_latex(d.size_groups; caption = "Descriptive national-vote size groups", label = "tab:report-party-size-bins",
-        column_spec = "llrrrr", headers = ("Election", "Vote group", "n", "A mean / median", "A/q mean / median", "Positive A: n (\\%)"),
-        renderers = (r -> r.election, r -> CD.latex_escape(r.size_group), r -> string(r.n),
-            r -> "$(fmt2(r.mean_A_i)) / $(fmt2(r.median_A_i))", r -> "$(fmt3(r.mean_A_over_q)) / $(fmt3(r.median_A_over_q))",
-            r -> "$(r.positive_A_i_count) ($(fmtpct(r.positive_A_i_share)))")))
-    large = only(eachrow(d.size_groups[(d.size_groups.election .== "pooled") .& (d.size_groups.size_group_order .== 4), :]))
-    below = d.size_groups[(d.size_groups.election .== "pooled") .& (d.size_groups.size_group_order .< 4), :]
-    println(io, "Across party-elections, $(large.positive_A_i_count)/$(large.n) parties with at least 5\\% of votes have positive \\(A_i\\), compared with $(sum(below.positive_A_i_count))/$(sum(below.n)) below 5\\%. " *
-        "The table reports participation in the complete V5 primary chronology; normalization by \\(q_i\\) retains a positive size association. This is not a monotonic size gradient: the 2022 intermediate-size group (3 to less than 5\\%) is entirely negative, while many tiny parties have small absolute losses.")
-    exceptions = d.parties[(d.parties.vote_share .>= Float64(PARTY_SIZE_BENCHMARK)) .& (d.parties.A_i .< 0), :]
-    for r in eachrow(exceptions)
-        println(io, "The large-party exception $(CD.latex_escape(r.party)) $(r.election_year) has $(fmtpct(r.vote_share))\\% of votes, \\(A_i=$(fmt2(r.A_i))\\) and \\(A_i/q_i=$(fmt3(r.A_over_q))\\).")
-    end
-    absent = String[]
-    for year in (2014, 2018, 2022)
-        never = d.parties[(d.parties.election_year .== year) .& .!d.parties.ever_in_cabinet, :]
-        sort!(never, [:vote_share, :party]; rev = [true, false])
-        isempty(never) && continue
-        r = first(eachrow(never))
-        push!(absent, "$(CD.latex_escape(r.party)) $(year) ($(fmtpct(r.vote_share))\\% of votes)")
-    end
-    println(io, "Among parties not observed in V5 primary cabinet sets, the largest in each election is " * join(absent, "; ") * ".")
-    links, sets = d.period_linkage, d.cabinet_sets
-    if isempty(sets)
-        println(io, "No identified cabinet compositions are available for the distinct-set component diagnostics. All observation days retain unavailable cabinet status.")
-        return String(take!(io))
-    end
-    shares = collect(skipmissing(sets.large_party_share_gross_positive_A))
-    shares_range = isempty(shares) ? "unavailable" : "$(fmtpct(minimum(shares)))--$(fmtpct(maximum(shares)))"
-    top_three_shares = collect(skipmissing(sets.top_three_by_q_share_gross_positive_A))
-    top_three_minimum = isempty(top_three_shares) ? "unavailable" : fmtpct(minimum(top_three_shares))
-    println(io, "\\par Among $(nrow(sets)) cabinet party sets, $(count(>(0), sets.A_C)) have positive \\(A_C\\); \\(B_C>0\\) in $(count(>(0), sets.B_C)). " *
-        "There are $(nrow(sets)) distinct election-year party sets. Positive contributions from members with at least 5\\% of votes exceed all negative member contributions in $(count(>(0), sets.large_positive_minus_all_negative_A)) sets; they supply $(shares_range)\\% of gross positives. " *
-        "The smallest such remaining balance is $(fmt2(minimum(sets.large_positive_minus_all_negative_A))) seats. Net \\(A_C\\) ranges from $(fmt2(minimum(sets.A_C))) to $(fmt2(maximum(sets.A_C))) seats.")
-    println(io, raw"\begin{itemize}")
-    for year in (2014, 2018, 2022)
-        pp = d.parties[(d.parties.election_year .== year) .& d.parties.ever_in_cabinet .& (d.parties.A_i .> 0), :]
-        by_A = sort(pp, [:A_i, :party]; rev = [true, false])
-        by_frequency = sort(pp, [:cabinet_observation_count, :A_i, :party]; rev = [true, true, false])
-        selected = union(Set(first(by_A, min(3, nrow(pp))).party),
-            Set(first(by_frequency, min(2, nrow(pp))).party))
-        top = by_A[in.(by_A.party, Ref(selected)), :]
-        entries = ["$(CD.latex_escape(r.party)): \\(A_i=$(fmt2(r.A_i))\\), $(r.cabinet_observation_count) distinct sets" for r in eachrow(top)]
-        println(io, "\\item $(year) recurring positive members: " * join(entries, "; ") * ".")
-    end
-    println(io, raw"\end{itemize}")
-    worst = sets[argmin(sets.A_C), :]
-    println(io, "The weakest net total belongs to cabinet party set $(worst.display_label): " *
-        "\\(A_C=$(fmt2(worst.A_C))\\), with gross positives $(fmt2(worst.gross_positive_A)) and negatives $(fmt2(worst.gross_negative_A)). " *
-        "The three largest members by \\(q_i\\) supply as little as $(top_three_minimum)\\% of gross positive \\(A_i\\); the explanation concerns a broader group of relatively large members. " *
-        "All distinct-set decompositions and all $(nrow(links)) period links are retained in the machine-readable outputs. The group arithmetic holds fixed the observed party contributions; it is not a simulated seat allocation after removing parties.")
-    return String(take!(io))
-end
 
 # The manuscript's effective-party statistics summarize the already calculated
 # national party panel. Keep the statistic in analysis, and its display in the
@@ -365,11 +296,11 @@ function write_party_size_diagnostic_outputs(output_root, full, diagnostic; writ
         record("raw/party_district_accounting_all_years.csv", full.cells, "raw", "Complete existing party-district accounting panel.")
         record("raw/district_accounting_all_years.csv", full.districts, "raw", "Existing district accounting weights and closure.")
     end
-    record("tables/report/party_fragmentation_summary.csv", party_fragmentation_summary(full.parties),
+    record("tables/summaries/party_fragmentation_summary.csv", party_fragmentation_summary(full.parties),
         "table", "Effective electoral and parliamentary party counts from the exact national party panel.")
-    specs = ((:cabinet_size, "tables/report/party_size_cabinet_summary.csv"),
-        (:correlations, "tables/report/party_size_correlations.csv"),
-        (:size_groups, "tables/report/party_size_groups.csv"),
+    specs = ((:cabinet_size, "tables/summaries/party_size_cabinet_summary.csv"),
+        (:correlations, "tables/summaries/party_size_correlations.csv"),
+        (:size_groups, "tables/summaries/party_size_groups.csv"),
         (:cabinet_sets, "raw/cabinet_party_set_accounting.csv"),
         (:period_linkage, "raw/cabinet_party_set_period_linkage.csv"),
         (:checks, "audit/party_size_diagnostic_checks.csv"))
@@ -389,15 +320,5 @@ function write_party_size_diagnostic_outputs(output_root, full, diagnostic; writ
             "Pearson and Spearman (average ranks for ties); q_i=513*vote_share has identical correlations; no significance tests.",
             "Exact accounting identities are separate from frozen-data regressions, which fail loudly on discrepancy."])
     record("audit/party_size_diagnostic_metadata.csv", metadata, "audit", "Diagnostic definitions, scope and descriptive-benchmark qualification.")
-    # Like the existing report, render only after reloading machine-readable inputs.
-    disk[:parties] = CSV.read(joinpath(output_root, "raw/party_accounting_all_years.csv"), DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-    report_data = (; (key => value for (key, value) in disk)...)
-    relative = "latex/report/party_size_diagnostics.tex"
-    path = joinpath(output_root, relative)
-    mkpath(dirname(path))
-    write(path, party_size_report_latex(report_data))
-    push!(artifacts, (path = relative, artifact_type = "latex",
-        description = "Central analysis report section; never synchronized into the manuscript.",
-        rows = nrow(diagnostic.parties), columns = 0, sha256 = sha256_file(path)))
     return artifacts
 end

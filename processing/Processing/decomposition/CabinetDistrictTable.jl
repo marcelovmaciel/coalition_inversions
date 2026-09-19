@@ -27,23 +27,3 @@ function cabinet_district_concentration(states::DataFrame)
          "negative_sum_exact", "top_three_positive_share_exact"]]) : DataFrame(records)
 end
 
-function cabinet_district_concentration_latex(data)
-    lines = String[
-        raw"\begin{tabular}{llcrrrr}", raw"\toprule",
-        raw"Election & Set &",
-        raw"\shortstack{Districts\\positive/negative} &",
-        raw"\shortstack{Positive\\sum} &",
-        raw"\shortstack{Negative\\sum} &",
-        raw"\shortstack{Top three\\share (\%)} &",
-        raw"\shortstack{Districts\\for 90\%} \\ ", raw"\midrule",
-    ]
-    isempty(data) && push!(lines, raw"\multicolumn{7}{l}{No identified cabinet inversions satisfy the criterion.} \\")
-    for row in eachrow(data)
-        push!(lines, "$(row.election_year) & $(row.cabinet_period) & " *
-            "$(row.positive_count)/$(row.negative_count) & $(fmt2(row.positive_sum)) & " *
-            "$(fmt2(row.negative_sum)) & $(ismissing(row.top_three_positive_share) ? "---" : @sprintf("%.1f", 100 * row.top_three_positive_share)) & " *
-            "$(ismissing(row.districts_for_ninety_pct) ? "---" : string(row.districts_for_ninety_pct)) \\\\")
-    end
-    append!(lines, [raw"\bottomrule", raw"\end{tabular}"])
-    join(lines, "\n")
-end

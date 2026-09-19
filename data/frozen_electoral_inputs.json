@@ -1,0 +1,59 @@
+[
+  {
+    "path": "data/raw/electionsBR/2014/candidate.csv",
+    "bytes": "12703436",
+    "sha256": "8eadc426609754ce6e1ad90f0ead0bbb287e00687b3764da127adabe5d957b7c"
+  },
+  {
+    "path": "data/raw/electionsBR/2014/party_mun_zone.csv",
+    "bytes": "127939192",
+    "sha256": "4f6ad49979afca1f32a4eb4ac40ed65a7ef3530716d1cd92efeca95211c914ec"
+  },
+  {
+    "path": "data/raw/electionsBR/2014/seats.csv",
+    "bytes": "26568",
+    "sha256": "85cbdf45ed594782aba36f21b4df07b500c5627f4da888720dac7aa87941359f"
+  },
+  {
+    "path": "data/raw/electionsBR/2018/candidate.csv",
+    "bytes": "14217376",
+    "sha256": "c692beda9c4834242f1584eebb6e02b81a9c7487769b413a737cc281b37f9e79"
+  },
+  {
+    "path": "data/raw/electionsBR/2018/party_mun_zone.csv",
+    "bytes": "157385887",
+    "sha256": "465d52477fe3ea05904aa77c20d47c6f7189c0124a3b2129031d3ea355b56227"
+  },
+  {
+    "path": "data/raw/electionsBR/2018/seats.csv",
+    "bytes": "27694",
+    "sha256": "ab7090e6c9b6ca391a7e2d2df807d1043fb254110a7bafea128daf3a4b4d919a"
+  },
+  {
+    "path": "data/raw/electionsBR/2022/candidate.csv",
+    "bytes": "14030526",
+    "sha256": "16b5bb0609687854ff8837aef0a4c068baf39cd6a1b303b77055eba7901c6bf7"
+  },
+  {
+    "path": "data/raw/electionsBR/2022/party_mun_zone.csv",
+    "bytes": "139322589",
+    "sha256": "1b37b3eef34159bca02cc4887114970b558b8e42177a3f0d9bd12df23cd89ebe"
+  },
+  {
+    "path": "data/raw/electionsBR/2022/seats.csv",
+    "bytes": "15457",
+    "sha256": "bc27dd2ea427ab2dfbc9f480023b91071e0a40ccbc75b74de1df794acac50a5a"
+  },
+  {
+    "path": "processing/Processing/data/party_aliases.csv",
+    "sha256": "5d467eb271b81a0530429b674af3a0a39a251100d14c258a83519d25c5254346",
+    "bytes": 9390,
+    "copied": true
+  },
+  {
+    "path": "processing/Processing/data/party_lineage_events.csv",
+    "sha256": "a97d8d48824ceeaf265fe70a380edc3ac486dc044e0e84d2e76ceb6c607255c9",
+    "bytes": 463,
+    "copied": true
+  }
+]

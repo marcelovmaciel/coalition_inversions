@@ -8,8 +8,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import audit_empirical_assets as audit
 from validate_prose_provenance import ProvenanceError, parse_blocks, validate_provenance
+from manuscript_results import build_results, write_results
 
 EXAMPLE = """There are four inversions with 47.25 percent of the vote.
 
@@ -52,7 +52,6 @@ class ProseProvenanceTests(unittest.TestCase):
         self.assertEqual(records[0]["current_row"], 2)
         self.assertEqual(records[0]["row_at_generation"], 1)
         self.assertEqual(len(warnings), 1)
-        self.assertIn("now data row 2", warnings[0])
 
     def test_missing_source(self):
         self.csv.unlink()
@@ -139,26 +138,44 @@ class ProseProvenanceTests(unittest.TestCase):
             with self.subTest(path=path), self.assertRaisesRegex(ProvenanceError, "repository-relative CSV"):
                 self.validate(EXAMPLE.replace("source: output.csv", "source: " + path))
 
-    def test_retired_macros_and_removed_blocks_fail(self):
-        with self.assertRaisesRegex(ProvenanceError, "No provenance"):
+    def test_missing_provenance_fails(self):
+        with self.assertRaises(ProvenanceError):
             self.validate("An unannotated manuscript.")
-        with self.assertRaisesRegex(ProvenanceError, "Retired empirical"):
-            self.validate(EXAMPLE + "\\CabinetRetiredCount{}")
-        self.validate(EXAMPLE + "% \\CabinetRetiredCount{}\n")
 
-    def test_final_asset_audit_runs_provenance_and_writes_current_rows(self):
-        with patch.object(audit, "audit_paper_manifest", return_value=[]), patch.object(audit, "audit_manuscript_references", return_value=[]):
-            result = audit.run_audit(paper_manifest=self.root / "unused.csv",
-                                     manuscript_sources=[self.manuscript],
-                                     audit_directory=self.root / "audit", repository_root=self.root)
-            self.assertEqual(len(result.provenance_records), 2)
-            with (self.root / "audit/manuscript_prose_provenance.csv").open() as handle:
-                records = list(csv.DictReader(handle))
-            self.assertEqual(records[0]["current_row"], "1")
-            self.manuscript.write_text(EXAMPLE.replace("count: 4", "count: 5"))
-            with self.assertRaisesRegex(audit.AuditError, "Prose provenance"):
-                audit.run_audit(paper_manifest=self.root / "unused.csv", manuscript_sources=[self.manuscript],
-                                audit_directory=self.root / "audit", repository_root=self.root)
+    def test_compact_results_use_source_values_and_survive_removal_of_exhaustive_source(self):
+        # The producer must never copy the annotated expectation into the data.
+        self.manuscript.write_text(EXAMPLE.replace("count: 4", "count: 99"))
+        records = build_results(self.manuscript, self.root, include_summaries=False)
+        self.assertEqual(next(r["value"] for r in records if r["field"] == "count"), "4")
+        compact = self.root / "manuscript_results.csv"
+        write_results(compact, records)
+        self.csv.unlink()
+        with self.assertRaisesRegex(ProvenanceError, "recorded"):
+            validate_provenance(self.manuscript, self.root, results=compact)
+        self.manuscript.write_text(EXAMPLE)
+        actual, warnings = validate_provenance(self.manuscript, self.root, results=compact)
+        self.assertEqual(len(actual), 2)
+        self.assertFalse(warnings)
+
+    def test_compact_results_require_complete_unique_selectors(self):
+        records = build_results(self.manuscript, self.root, include_summaries=False)
+        compact = self.root / "manuscript_results.csv"
+        for altered, message in ((records[:1], "selectors differ"),
+                                 (records + records[:1], "Duplicate")):
+            write_results(compact, altered)
+            with self.subTest(message=message), self.assertRaisesRegex(ProvenanceError, message):
+                validate_provenance(self.manuscript, self.root, results=compact)
+        records[0]["value"] = "5"
+        write_results(compact, records)
+        with self.assertRaisesRegex(ProvenanceError, "recorded"):
+            validate_provenance(self.manuscript, self.root, results=compact)
+
+    def test_compact_result_selection_is_independent_of_key_order(self):
+        records = build_results(self.manuscript, self.root, include_summaries=False)
+        compact = self.root / "manuscript_results.csv"
+        write_results(compact, records)
+        self.manuscript.write_text(EXAMPLE.replace("election=2018; universe=seat_winning", "universe=seat_winning; election=2018"))
+        validate_provenance(self.manuscript, self.root, results=compact)
 
 
 if __name__ == "__main__":

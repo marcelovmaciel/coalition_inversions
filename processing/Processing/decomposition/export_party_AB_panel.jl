@@ -10,7 +10,7 @@ using .CoalitionDecomposition
 
 length(ARGS) == 1 || error("Usage: export_party_AB_panel.jl OUTPUT.csv")
 root = normpath(joinpath(@__DIR__, "..", "..", ".."))
-baseline = CSV.read(joinpath(root, "processing", "Processing", "output", "paper",
+baseline = CSV.read(joinpath(root, "build", "results", "domains",
                              "raw", "party_seat_differentials_all_years.csv"), DataFrame)
 panels = DataFrame[]
 for year in (2014, 2018, 2022)

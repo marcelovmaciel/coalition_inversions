@@ -12,6 +12,8 @@ import ..Processing.AnalysisRunnerCore as ARC
 export ACCOUNTING_ATOL,
        ACCOUNTING_RTOL,
        build_year_accounting,
+       coalition_accounting,
+       write_coalition_accounting,
        recompute_coalition_periods,
        decompose_inversions,
        write_decomposition_outputs,
@@ -24,8 +26,6 @@ const Rat = Rational{BigInt}
 
 bigint(value::Integer) = BigInt(value)
 exact_fraction(numerator::Integer, denominator::Integer) = bigint(numerator) // bigint(denominator)
-exact_product_ratio(left::Integer, right::Integer, denominator::Integer) =
-    (bigint(left) * bigint(right)) // bigint(denominator)
 
 function require(condition::Bool, message::AbstractString)
     condition || error(message)
@@ -275,8 +275,8 @@ function build_year_accounting(
     b_exact = Rat[]
     b_factored_exact = Rat[]
     for row in eachrow(panel)
-        within_quota = exact_product_ratio(row.district_seats, row.votes, row.district_votes)
-        national_contribution = exact_product_ratio(national_seats, row.votes, national_votes)
+        within_quota = Processing.proportional_quota(row.votes, row.district_votes, row.district_seats)
+        national_contribution = Processing.proportional_quota(row.votes, national_votes, national_seats)
         a_value = exact_fraction(row.seats, 1) - within_quota
         b_value = within_quota - national_contribution
         b_factored = exact_fraction(national_seats, 1) *
@@ -309,12 +309,13 @@ function build_year_accounting(
     differential_exact = Rat[]
     ratio_exact = Union{Missing,Rat}[]
     for row in eachrow(party)
-        quota = exact_product_ratio(national_seats, row.votes, national_votes)
-        differential = exact_fraction(row.seats, 1) - quota
+        quantities = Processing.exact_accounting(Int(row.votes), Int(row.seats);
+            national_vote_total=national_votes, total_seats=national_seats)
+        quota, differential = quantities.q, quantities.d
         row.A_exact + row.B_exact == differential || error(
             "$(year)/$(row.party): A_i + B_i != d_i.",
         )
-        ratio = row.votes == 0 ? missing : exact_fraction(row.seats, 1) / quota
+        ratio = quantities.R
         if ratio !== missing
             quota * (ratio - exact_fraction(1, 1)) == differential || error(
                 "$(year)/$(row.party): q_i(R_i - 1) != d_i.",
@@ -346,7 +347,7 @@ function build_year_accounting(
             "$(year)/$(first(group.district)): district sum(a_id) != 0.",
         )
         expected_b_sum = exact_fraction(first(group.district_seats), 1) -
-            exact_product_ratio(national_seats, first(group.district_votes), national_votes)
+            Processing.proportional_quota(first(group.district_votes), national_votes, national_seats)
         sum(group.b_exact) == expected_b_sum || error(
             "$(year)/$(first(group.district)): district sum(b_id) closure failed.",
         )
@@ -415,24 +416,13 @@ function recompute_coalition_periods(
         year = Int(source.election_year)
         accounting = accounting_by_year[year]
         parties = split_parties(source.parties)
-        available = Set(String.(accounting.party.party))
-        missing_parties = setdiff(Set(parties), available)
-        isempty(missing_parties) || error(
-            "$(year)/$(source.period): coalition parties absent from election panel: " *
-            join(sort(collect(missing_parties)), ", "),
-        )
-        members = accounting.party[in.(String.(accounting.party.party), Ref(Set(parties))), :]
-        coalition_votes = sum(members.votes)
-        coalition_seats = sum(members.seats)
-        quota_exact = exact_product_ratio(accounting.national_seats, coalition_votes, accounting.national_votes)
-        differential_exact = exact_fraction(coalition_seats, 1) - quota_exact
-        required_exact = exact_fraction(accounting.seat_majority_threshold, 1) - quota_exact
-        vote_share = coalition_votes / accounting.national_votes
-        seat_share = coalition_seats / accounting.national_seats
+        values = coalition_accounting(accounting, parties)
+        coalition_votes, coalition_seats = values.votes, values.seats
+        quota_exact, differential_exact, required_exact = values.q, values.d, values.r
+        vote_share, seat_share = values.status.vote_share, values.status.seat_share
         ratio = iszero(quota_exact) ? missing : coalition_seats / Float64(quota_exact)
-        vote_majority = vote_share >= 0.5
-        seat_majority = coalition_seats >= accounting.seat_majority_threshold
-        inversion = vote_share < 0.5 && seat_majority
+        vote_majority, seat_majority = values.status.vote_majority, values.status.seat_majority
+        inversion = values.status.coalition_inversion
         canonical_parties = join(parties, ", ")
 
         canonical_parties == join(split_parties(source.parties), ", ") || error(
@@ -499,8 +489,8 @@ function exact_coalition_district(accounting, parties::Vector{String}, district:
     s_Cd = sum(members.seats)
     V_d = first(district_rows.district_votes)
     S_d = first(district_rows.district_seats)
-    within_quota = exact_product_ratio(S_d, v_Cd, V_d)
-    national_contribution = exact_product_ratio(accounting.national_seats, v_Cd, accounting.national_votes)
+    within_quota = Processing.proportional_quota(v_Cd, V_d, S_d)
+    national_contribution = Processing.proportional_quota(v_Cd, accounting.national_votes, accounting.national_seats)
     a_value = exact_fraction(s_Cd, 1) - within_quota
     b_value = within_quota - national_contribution
     b_factored = exact_fraction(accounting.national_seats, 1) *
@@ -521,6 +511,100 @@ function exact_coalition_district(accounting, parties::Vector{String}, district:
         b_exact = b_value,
         b_factored_exact = b_factored,
     )
+end
+
+"""
+    coalition_accounting(accounting, parties; include_districts=false)
+
+The canonical coalition calculation. Membership is a set, the national vote
+normalizer includes every party, and all accounting quantities remain rational.
+Output adapters may preserve their own member ordering without changing totals.
+"""
+function coalition_accounting(accounting, parties::AbstractVector{<:AbstractString}; include_districts=false)
+    length(parties) == length(unique(parties)) || error("Duplicate coalition parties.")
+    requested = Set(String.(parties))
+    available = Set(String.(accounting.party.party))
+    isempty(setdiff(requested, available)) || error("Coalition contains parties absent from election accounting.")
+    members = accounting.party[in.(String.(accounting.party.party), Ref(requested)), :]
+    votes = sum(members.votes; init=0)
+    seats = sum(members.seats; init=0)
+    quantities = Processing.exact_accounting(votes, seats;
+        national_vote_total=accounting.national_votes, total_seats=accounting.national_seats,
+        seat_majority_threshold=accounting.seat_majority_threshold)
+    q, d, r, R = quantities.q, quantities.d, quantities.r, quantities.R
+    A = sum(members.A_exact; init=Rat(0))
+    B = sum(members.B_exact; init=Rat(0))
+    A + B == d || error("Coalition A + B differs from d.")
+    sum(members.d_exact; init=Rat(0)) == d || error("Coalition party differentials do not close.")
+    ismissing(R) || q * (R - 1) == d || error("Coalition representation identity failed.")
+    status = (vote_share=Float64(quantities.vote_share), seat_share=Float64(quantities.seat_share),
+        vote_majority=quantities.vote_majority, seat_majority=quantities.seat_majority,
+        coalition_inversion=quantities.inversion)
+    districts = include_districts ? [merge((district=String(district),),
+        exact_coalition_district(accounting, String.(parties), String(district)))
+        for district in sort(unique(String.(accounting.panel.district)))] : NamedTuple[]
+    if include_districts
+        sum(row.a_exact for row in districts) == A || error("Coalition district A vector does not close.")
+        sum(row.b_exact for row in districts) == B || error("Coalition district B vector does not close.")
+    end
+    return (; votes, seats, q, d, r, A, B, R, members, districts, status)
+end
+
+"""Export one national accounting row per election/member set used by the analysis.
+
+Domain identity (universe, k and minimality) belongs to the separate full domain
+registry. The cabinet snapshot supplies memberships, never electoral quantities.
+"""
+function write_coalition_accounting(path, domain_path, cabinet_root, accounting_by_year)
+    memberships = Set{Tuple{Int,String}}()
+    canonical(value, separator) = ismissing(value) ? "" : join(sort(filter(!isempty,
+        strip.(String.(split(String(value), separator))))), ";")
+    for row in CSV.File(domain_path)
+        push!(memberships, (Int(row.election), canonical(row.parties, ',')))
+    end
+    for filename in ("cabinet_periods.csv", "cabinet_sensitivity_periods.csv")
+        for row in CSV.File(joinpath(cabinet_root, filename))
+            push!(memberships, (Int(row.election_year), canonical(row.party_set, ';')))
+        end
+    end
+    rows = NamedTuple[]
+    for (year, membership) in sort(collect(memberships))
+        a = accounting_by_year[year]
+        parties = isempty(membership) ? String[] : String.(split(membership, ';'))
+        c = coalition_accounting(a, parties)
+        push!(rows, (election_year=year, coalition_members=membership,
+            votes=c.votes, seats=c.seats, V=a.national_votes, S=a.national_seats,
+            seat_majority_threshold=a.seat_majority_threshold,
+            vote_share=c.status.vote_share, seat_share=c.status.seat_share,
+            vote_share_exact=string(exact_fraction(c.votes,a.national_votes)),
+            seat_share_exact=string(exact_fraction(c.seats,a.national_seats)),
+            q_C=Float64(c.q), d_C=Float64(c.d), r_C=Float64(c.r),
+            A_C=Float64(c.A), B_C=Float64(c.B), R_C=ismissing(c.R) ? missing : Float64(c.R),
+            q_C_exact=string(c.q), d_C_exact=string(c.d), r_C_exact=string(c.r),
+            A_C_exact=string(c.A), B_C_exact=string(c.B), R_C_exact=ismissing(c.R) ? missing : string(c.R),
+            A_over_q=iszero(c.q) ? missing : Float64(c.A/c.q),
+            B_over_q=iszero(c.q) ? missing : Float64(c.B/c.q),
+            A_pct_quota=iszero(c.q) ? missing : Float64(100*c.A/c.q),
+            B_pct_quota=iszero(c.q) ? missing : Float64(100*c.B/c.q),
+            A_over_q_exact=iszero(c.q) ? missing : string(c.A/c.q),
+            B_over_q_exact=iszero(c.q) ? missing : string(c.B/c.q),
+            A_pct_quota_exact=iszero(c.q) ? missing : string(100*c.A/c.q),
+            B_pct_quota_exact=iszero(c.q) ? missing : string(100*c.B/c.q),
+            vote_majority=c.status.vote_majority, seat_majority=c.status.seat_majority,
+            inversion=c.status.coalition_inversion))
+    end
+    data = DataFrame(rows)
+    mkpath(dirname(path))
+    # gzip -n omits temporary filename/time metadata; the canonical scientific
+    # object is compressed once, without a persistent uncompressed duplicate.
+    mktemp(dirname(path)) do temporary, io
+        close(io)
+        CSV.write(temporary, data)
+        open(path, "w") do compressed
+            run(pipeline(`gzip -n -c -- $temporary`, stdout=compressed))
+        end
+    end
+    return data
 end
 
 function qualification_for_year(year::Integer)
@@ -554,10 +638,9 @@ function decompose_inversions(coalition_periods::DataFrame, accounting_by_year::
             "$(year)/$(period): decomposed coalition lacks a Chamber seat majority.",
         )
 
-        case_district_exact = NamedTuple[]
-        for district in sort(unique(String.(accounting.panel.district)))
-            values = exact_coalition_district(accounting, parties, district)
-            push!(case_district_exact, merge((district = district,), values))
+        values_C = coalition_accounting(accounting, parties; include_districts=true)
+        for values in values_C.districts
+            district = values.district
             push!(district_rows, (
                 coalition_id = String(coalition.coalition_id),
                 election_year = year,
@@ -578,22 +661,9 @@ function decompose_inversions(coalition_periods::DataFrame, accounting_by_year::
                 b_crosscheck_residual = Float64(values.b_exact - values.b_factored_exact),
             ))
         end
-        A_exact = sum(row.a_exact for row in case_district_exact)
-        B_exact = sum(row.b_exact for row in case_district_exact)
-        q_exact = exact_product_ratio(accounting.national_seats, coalition.v_C, accounting.national_votes)
-        d_exact = exact_fraction(coalition.s_C, 1) - q_exact
-        r_exact = exact_fraction(accounting.seat_majority_threshold, 1) - q_exact
-        A_exact + B_exact == d_exact || error("$(year)/$(period): A_C + B_C != d_C exactly.")
-
-        members = accounting.party[in.(String.(accounting.party.party), Ref(Set(parties))), :]
-        sum(members.d_exact) == d_exact || error("$(year)/$(period): sum_i d_i != d_C exactly.")
-        sum(members.A_exact) == A_exact || error("$(year)/$(period): sum_i A_i != A_C exactly.")
-        sum(members.B_exact) == B_exact || error("$(year)/$(period): sum_i B_i != B_C exactly.")
-
-        complement = accounting.party[.!in.(String.(accounting.party.party), Ref(Set(parties))), :]
-        sum(complement.d_exact) == -d_exact || error("$(year)/$(period): complement d identity failed.")
-        sum(complement.A_exact) == -A_exact || error("$(year)/$(period): complement A identity failed.")
-        sum(complement.B_exact) == -B_exact || error("$(year)/$(period): complement B identity failed.")
+        A_exact, B_exact = values_C.A, values_C.B
+        q_exact, d_exact, r_exact = values_C.q, values_C.d, values_C.r
+        members = values_C.members
 
         require_approx(q_exact, coalition.q_C, "$(year)/$(period) q_C coalition output")
         require_approx(d_exact, coalition.d_C, "$(year)/$(period) d_C coalition output")
@@ -760,45 +830,7 @@ function closure_preserving_display(d_C, A_C)
     )
 end
 
-function decomposition_latex(data::DataFrame)
-    length(unique(data.coalition_id)) == nrow(data) || error("Duplicate cabinet decomposition rows")
-    io = IOBuffer()
-    println(io, "\\begin{tabularx}{\\textwidth}{@{}llrrrrrr>{\\raggedright\\arraybackslash}X@{}}")
-    println(io, "\\toprule")
-    println(io, "Election & Set & Days & Vote \\% & Seats & \\(d_C\\) & \\(A_C\\) & \\(B_C\\) & Parties \\\\")
-    println(io, "\\midrule")
-    isempty(data) && println(io, raw"\multicolumn{9}{l}{No identified cabinet inversions satisfy the criterion.} \\")
-    for row in eachrow(data)
-        displayed = closure_preserving_display(row.d_C, row.A_C)
-        println(io,
-            "$(row.election_year) & $(latex_escape(row.cabinet_period)) & " *
-            "$(row.period_days) & $(fmt2(row.vote_share_pct)) & $(row.s_C) & " *
-            "$(displayed.d_C) & $(displayed.A_C) & $(displayed.B_C) & " *
-            "$(latex_escape(row.coalition_parties)) \\\\",
-        )
-    end
-    println(io, "\\bottomrule")
-    println(io, "\\end{tabularx}")
-    return String(take!(io))
-end
 
-function party_extremes_latex(data::DataFrame)
-    io = IOBuffer()
-    println(io, "\\begin{tabular}{lllrlr}")
-    println(io, "\\toprule")
-    println(io, "Election & Set & Largest positive & \\(d_i\\) & Largest negative & \\(d_i\\) \\\\")
-    println(io, "\\midrule")
-    for row in eachrow(data)
-        println(io,
-            "$(row.election_year) & $(latex_escape(row.cabinet_period)) & " *
-            "$(latex_escape(row.largest_positive_party)) & $(fmt2(row.largest_positive_d_i)) & " *
-            "$(latex_escape(row.largest_negative_party)) & $(fmt2(row.largest_negative_d_i)) \\\\",
-        )
-    end
-    println(io, "\\bottomrule")
-    println(io, "\\end{tabular}")
-    return String(take!(io))
-end
 
 function sha256_file(path::AbstractString)
     return open(path, "r") do io
@@ -849,9 +881,8 @@ function write_decomposition_outputs(output_root::AbstractString, coalition_peri
     raw_dir = joinpath(output_root, "raw")
     tables_dir = joinpath(output_root, "tables")
     figure_dir = joinpath(output_root, "figure_data")
-    latex_dir = joinpath(output_root, "latex")
     audit_dir = joinpath(output_root, "audit")
-    foreach(mkpath, (raw_dir, tables_dir, figure_dir, latex_dir, audit_dir))
+    foreach(mkpath, (raw_dir, tables_dir, figure_dir, audit_dir))
 
     artifacts = NamedTuple[]
     function record_csv(relative_path, data, artifact_type, description)
@@ -919,38 +950,6 @@ function write_decomposition_outputs(output_root::AbstractString, coalition_peri
 
     decomposition_from_csv = CSV.read(decomposition_table_path, DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
     extremes_from_csv = CSV.read(extremes_table_path, DataFrame; types = (i, name) -> name in (:period, :cabinet_period) ? String : nothing)
-    latex_assets = (
-        (
-            "latex/table_observed_inversion_decomposition.tex",
-            decomposition_latex(decomposition_from_csv) * "\n" * cabinet_identification_note(cabinet_unidentified_days(output_root)) * "\n" * cabinet_date_convention_note(output_root),
-            "Portrait manuscript tabularx for all observed cabinet inversions and their accounting components.",
-            nrow(decomposition_from_csv),
-            9,
-        ),
-        (
-            "latex/table_inversion_party_contribution_extremes.tex",
-            party_extremes_latex(extremes_from_csv),
-            "Compact manuscript table of party contribution extremes.",
-            nrow(extremes_from_csv),
-            6,
-        ),
-    )
-    for (relative_path, contents, description, rows, columns) in latex_assets
-        path = joinpath(output_root, relative_path)
-        mkpath(dirname(path))
-        open(path, "w") do io
-            write(io, contents)
-        end
-        push!(artifacts, (
-            path = relative_path,
-            artifact_type = "latex",
-            description = description,
-            rows = rows,
-            columns = columns,
-            sha256 = sha256_file(path),
-        ))
-    end
-
     manifest = DataFrame(artifacts)
     sort!(manifest, :path)
     manifest_path = joinpath(output_root, "artifact_manifest.csv")

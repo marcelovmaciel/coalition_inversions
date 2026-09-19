@@ -1,0 +1,592 @@
+{
+  "schema": "cabinet-election-periods",
+  "schema_version": 1,
+  "release_version": "2026-03-19-v6-election-v1",
+  "coverage": {
+    "start_inclusive": "2015-01-01",
+    "end_exclusive": "2026-03-20"
+  },
+  "election_windows": [
+    {
+      "election_year": 2014,
+      "start_inclusive": "2015-01-01",
+      "end_exclusive": "2019-01-01"
+    },
+    {
+      "election_year": 2018,
+      "start_inclusive": "2019-01-01",
+      "end_exclusive": "2023-01-01"
+    },
+    {
+      "election_year": 2022,
+      "start_inclusive": "2023-01-01",
+      "end_exclusive": "2026-03-20"
+    }
+  ],
+  "files": {
+    "cabinet_periods.csv": [
+      "period_id",
+      "election_year",
+      "start_inclusive",
+      "end_exclusive",
+      "party_set"
+    ],
+    "cabinet_sensitivity_periods.csv": [
+      "scenario_id",
+      "period_id",
+      "election_year",
+      "start_inclusive",
+      "end_exclusive",
+      "party_set"
+    ],
+    "cabinet_coverage.csv": [
+      "start_inclusive",
+      "end_exclusive",
+      "administration",
+      "status"
+    ]
+  },
+  "date_convention": "ISO 8601 civil dates; start inclusive, end exclusive; closing-state convention; days are calendar-date differences.",
+  "party_identity_convention": "2014, 2018 and 2022 election labels under the accepted projection; one-to-many merger expansions are set unions before maximal compression.",
+  "party_set_encoding": "Semicolon-separated, sorted unique UTF-8 party labels. Empty string is a complete empty set. Missing cells/rows are invalid; UNKNOWN is never a party label.",
+  "period_identifiers": "CV5-NNN in chronological order, scoped to primary or scenario_id. Maximal membership and election periods; administration and status boundaries come from cabinet_coverage.csv.",
+  "coding_policy": "Complete primary union of qualifying cabinet party witnesses under accepted V6 coding. A provisional date assumes no additional party contribution from an unresolved affiliation; it does not establish historical non-affiliation.",
+  "scenario_policy": "Each scenario is a complete calendar changing one accepted uncertainty at a time. Candidates with the same sensitivity_id are mutually exclusive. No joint combinations or exhaustive joint uncertainty are asserted. Equal memberships are retained as distinct accepted scenarios. All calendars inherit the exact primary coverage/status mask; provisional comparisons remain conditional.",
+  "unresolved_status": "unbounded_unknown",
+  "unresolved_scope": "Exactly the provisional intervals in cabinet_coverage.csv. Membership outside the finite alternatives is not bounded; no extra party or claim of zero possible effect is supplied.",
+  "scenarios": [
+    {
+      "scenario_id": "affiliation-7f51ac18f31f@service-michel_temer-0-46/PSDB",
+      "sensitivity_id": "affiliation-7f51ac18f31f@service-michel_temer-0-46",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2017-02-22",
+      "end_exclusive": "2017-03-07",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-7f51ac18f31f@service-michel_temer-0-46/UNAFFILIATED",
+      "sensitivity_id": "affiliation-7f51ac18f31f@service-michel_temer-0-46",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2017-02-22",
+      "end_exclusive": "2017-03-07",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-8527ce77d2d2@service-dilma_rousseff-1-77/MDB",
+      "sensitivity_id": "affiliation-8527ce77d2d2@service-dilma_rousseff-1-77",
+      "kind": "finite_affiliation",
+      "candidate": "MDB",
+      "start_inclusive": "2016-03-28",
+      "end_exclusive": "2016-04-21",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (MDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-8527ce77d2d2@service-michel_temer-0-64/MDB",
+      "sensitivity_id": "affiliation-8527ce77d2d2@service-michel_temer-0-64",
+      "kind": "finite_affiliation",
+      "candidate": "MDB",
+      "start_inclusive": "2016-06-17",
+      "end_exclusive": "2016-10-05",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (MDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2016-10-10-2016-10-10@service-C041-paulo-pedrosa-2016-10-10/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2016-10-10-2016-10-10@service-C041-paulo-pedrosa-2016-10-10",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2016-10-10",
+      "end_exclusive": "2016-10-11",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2016-10-10-2016-10-10@service-C041-paulo-pedrosa-2016-10-10/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2016-10-10-2016-10-10@service-C041-paulo-pedrosa-2016-10-10",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2016-10-10",
+      "end_exclusive": "2016-10-11",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2016-10-25-2016-10-25@service-C041-paulo-pedrosa-2016-10-25/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2016-10-25-2016-10-25@service-C041-paulo-pedrosa-2016-10-25",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2016-10-25",
+      "end_exclusive": "2016-10-26",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2016-10-25-2016-10-25@service-C041-paulo-pedrosa-2016-10-25/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2016-10-25-2016-10-25@service-C041-paulo-pedrosa-2016-10-25",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2016-10-25",
+      "end_exclusive": "2016-10-26",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-04-26-2017-04-26@service-C041-paulo-pedrosa-2017-04-26/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-04-26-2017-04-26@service-C041-paulo-pedrosa-2017-04-26",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2017-04-26",
+      "end_exclusive": "2017-04-27",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-04-26-2017-04-26@service-C041-paulo-pedrosa-2017-04-26/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-04-26-2017-04-26@service-C041-paulo-pedrosa-2017-04-26",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2017-04-26",
+      "end_exclusive": "2017-04-27",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-08-02-2017-08-02@service-C041-paulo-pedrosa-2017-08-02/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-08-02-2017-08-02@service-C041-paulo-pedrosa-2017-08-02",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2017-08-02",
+      "end_exclusive": "2017-08-03",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-08-02-2017-08-02@service-C041-paulo-pedrosa-2017-08-02/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-08-02-2017-08-02@service-C041-paulo-pedrosa-2017-08-02",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2017-08-02",
+      "end_exclusive": "2017-08-03",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-10-18-2017-10-18@service-C041-paulo-pedrosa-2017-10-18/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-10-18-2017-10-18@service-C041-paulo-pedrosa-2017-10-18",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2017-10-18",
+      "end_exclusive": "2017-10-26",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2017-10-18-2017-10-18@service-C041-paulo-pedrosa-2017-10-18/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2017-10-18-2017-10-18@service-C041-paulo-pedrosa-2017-10-18",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2017-10-18",
+      "end_exclusive": "2017-10-26",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2018-04-06-2018-04-06@service-C041-paulo-pedrosa-2018-04-06/PSDB",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2018-04-06-2018-04-06@service-C041-paulo-pedrosa-2018-04-06",
+      "kind": "finite_affiliation",
+      "candidate": "PSDB",
+      "start_inclusive": "2018-04-06",
+      "end_exclusive": "2018-04-10",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (PSDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C041-paulo-pedrosa-2018-04-06-2018-04-06@service-C041-paulo-pedrosa-2018-04-06/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C041-paulo-pedrosa-2018-04-06-2018-04-06@service-C041-paulo-pedrosa-2018-04-06",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2018-04-06",
+      "end_exclusive": "2018-04-10",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C044-helder-melillo-lopes-cunha-silva-2022-12-30@service-C044-helder-melillo-lopes-cunha-silva/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C044-helder-melillo-lopes-cunha-silva-2022-12-30@service-C044-helder-melillo-lopes-cunha-silva",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2022-12-30",
+      "end_exclusive": "2023-01-01",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C053-alberto-alves@service-C053-person-9cf6aaca0bc9/MDB",
+      "sensitivity_id": "affiliation-C053-alberto-alves@service-C053-person-9cf6aaca0bc9",
+      "kind": "finite_affiliation",
+      "candidate": "MDB",
+      "start_inclusive": "2018-04-06",
+      "end_exclusive": "2018-04-10",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (MDB) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C074-carlos-henrique-sobral-2023@service-C073-vacancy-0/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C074-carlos-henrique-sobral-2023@service-C073-vacancy-0",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2023-11-30",
+      "end_exclusive": "2023-12-04",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-C074-carlos-henrique-sobral-2023@service-C073-vacancy-3/UNAFFILIATED",
+      "sensitivity_id": "affiliation-C074-carlos-henrique-sobral-2023@service-C073-vacancy-3",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2025-02-01",
+      "end_exclusive": "2025-02-03",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "affiliation-b5e73dd9d2f3@service-dilma_rousseff-1-32/UNAFFILIATED",
+      "sensitivity_id": "affiliation-b5e73dd9d2f3@service-dilma_rousseff-1-32",
+      "kind": "finite_affiliation",
+      "candidate": "UNAFFILIATED",
+      "start_inclusive": "2016-04-14",
+      "end_exclusive": "2016-04-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One bounded affiliation alternative (UNAFFILIATED) on the stated interval; independent representation and all other accepted facts retain primary values. Candidate is an opaque upstream label; the complete published election-year memberships are authoritative."
+    },
+    {
+      "scenario_id": "environment-2018-succession/2018-04-07",
+      "sensitivity_id": "environment-2018-succession",
+      "kind": "joint_service_date",
+      "candidate": "2018-04-07",
+      "start_inclusive": "2018-04-06",
+      "end_exclusive": "2018-04-07",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2018-04-07 instead of 2018-04-06; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "justice-2026-entry/2026-01-13",
+      "sensitivity_id": "justice-2026-entry",
+      "kind": "joint_service_date",
+      "candidate": "2026-01-13",
+      "start_inclusive": "2026-01-13",
+      "end_exclusive": "2026-01-15",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2026-01-13 instead of 2026-01-15; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "justice-2026-entry/2026-01-14",
+      "sensitivity_id": "justice-2026-entry",
+      "kind": "joint_service_date",
+      "candidate": "2026-01-14",
+      "start_inclusive": "2026-01-13",
+      "end_exclusive": "2026-01-15",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2026-01-14 instead of 2026-01-15; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "mdic-2018-succession/2018-01-03",
+      "sensitivity_id": "mdic-2018-succession",
+      "kind": "joint_service_date",
+      "candidate": "2018-01-03",
+      "start_inclusive": "2018-01-03",
+      "end_exclusive": "2018-01-05",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2018-01-03 instead of 2018-01-04; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "mdic-2018-succession/2018-01-05",
+      "sensitivity_id": "mdic-2018-succession",
+      "kind": "joint_service_date",
+      "candidate": "2018-01-05",
+      "start_inclusive": "2018-01-03",
+      "end_exclusive": "2018-01-05",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2018-01-05 instead of 2018-01-04; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "mre-2021-effective-entry/2021-03-30",
+      "sensitivity_id": "mre-2021-effective-entry",
+      "kind": "joint_service_date",
+      "candidate": "2021-03-30",
+      "start_inclusive": "2021-03-30",
+      "end_exclusive": "2021-03-31",
+      "unbounded_personal_uncertainty": true,
+      "meaning": "One succession effective 2021-03-30 instead of 2021-03-31; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "sabino-2023-return/2023-12-04",
+      "sensitivity_id": "sabino-2023-return",
+      "kind": "joint_service_date",
+      "candidate": "2023-12-04",
+      "start_inclusive": "2023-12-04",
+      "end_exclusive": "2023-12-06",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2023-12-04 instead of 2023-12-06; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "sabino-2023-return/2023-12-05",
+      "sensitivity_id": "sabino-2023-return",
+      "kind": "joint_service_date",
+      "candidate": "2023-12-05",
+      "start_inclusive": "2023-12-04",
+      "end_exclusive": "2023-12-06",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2023-12-05 instead of 2023-12-06; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "sabino-2025-nov-return/2025-11-14",
+      "sensitivity_id": "sabino-2025-nov-return",
+      "kind": "joint_service_date",
+      "candidate": "2025-11-14",
+      "start_inclusive": "2025-11-14",
+      "end_exclusive": "2025-11-17",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2025-11-14 instead of 2025-11-17; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "sabino-2025-nov-return/2025-11-15",
+      "sensitivity_id": "sabino-2025-nov-return",
+      "kind": "joint_service_date",
+      "candidate": "2025-11-15",
+      "start_inclusive": "2025-11-14",
+      "end_exclusive": "2025-11-17",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2025-11-15 instead of 2025-11-17; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "sabino-2025-nov-return/2025-11-16",
+      "sensitivity_id": "sabino-2025-nov-return",
+      "kind": "joint_service_date",
+      "candidate": "2025-11-16",
+      "start_inclusive": "2025-11-14",
+      "end_exclusive": "2025-11-17",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One succession effective 2025-11-16 instead of 2025-11-17; outgoing and incoming service boundaries move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-20d6d1c35408/2020-06-16",
+      "sensitivity_id": "transition-person-20d6d1c35408",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-06-16",
+      "start_inclusive": "2020-06-16",
+      "end_exclusive": "2020-06-18",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-06-16 instead of 2020-06-18; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-20d6d1c35408/2020-06-17",
+      "sensitivity_id": "transition-person-20d6d1c35408",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-06-17",
+      "start_inclusive": "2020-06-16",
+      "end_exclusive": "2020-06-18",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-06-17 instead of 2020-06-18; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-04",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-04",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-04 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-05",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-05",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-05 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-06",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-06",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-06 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-07",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-07",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-07 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-08",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-08",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-08 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-09",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-09",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-09 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-10",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-10",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-10 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-11",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-11",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-11 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-12",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-12",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-12 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-13",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-13",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-13 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-14",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-14",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-14 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-15",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-15",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-15 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-16",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-16",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-16 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-17",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-17",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-17 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-87ad75f8d2f9/2020-09-18",
+      "sensitivity_id": "transition-person-87ad75f8d2f9",
+      "kind": "joint_affiliation_date",
+      "candidate": "2020-09-18",
+      "start_inclusive": "2020-09-04",
+      "end_exclusive": "2020-09-19",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2020-09-18 instead of 2020-09-19; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-c65a317c70db/2022-03-01",
+      "sensitivity_id": "transition-person-c65a317c70db",
+      "kind": "joint_affiliation_date",
+      "candidate": "2022-03-01",
+      "start_inclusive": "2022-03-01",
+      "end_exclusive": "2022-03-04",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2022-03-01 instead of 2022-03-04; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-c65a317c70db/2022-03-02",
+      "sensitivity_id": "transition-person-c65a317c70db",
+      "kind": "joint_affiliation_date",
+      "candidate": "2022-03-02",
+      "start_inclusive": "2022-03-01",
+      "end_exclusive": "2022-03-04",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2022-03-02 instead of 2022-03-04; adjacent states move together; all other accepted facts retain primary values."
+    },
+    {
+      "scenario_id": "transition-person-c65a317c70db/2022-03-03",
+      "sensitivity_id": "transition-person-c65a317c70db",
+      "kind": "joint_affiliation_date",
+      "candidate": "2022-03-03",
+      "start_inclusive": "2022-03-01",
+      "end_exclusive": "2022-03-04",
+      "unbounded_personal_uncertainty": false,
+      "meaning": "One affiliation transition effective 2022-03-03 instead of 2022-03-04; adjacent states move together; all other accepted facts retain primary values."
+    }
+  ],
+  "source": {
+    "release_version": "2026-03-19-history-v6-onyx-candidate",
+    "schema_version": 3,
+    "metadata_sha256": "750591b888bd7ca6d1bf8b22239f4927fb44579dd36dc9b2d6fea8dcbdda8a8f",
+    "provenance_location": "cabinet_dataset/releases/2026-03-19-history-v6-onyx-candidate",
+    "projection_location": "applications/coalition_inversions/cabinet_release_election_crosswalk.csv",
+    "projection_sha256": "ffc9128718fd77e4cd74fcfca38c5897cb6d4a55fc0081c6955ae7c451262733"
+  },
+  "data_checksum": {
+    "algorithm": "sha256",
+    "framing": "For each CSV filename in lexical order: UTF-8 filename, NUL byte, exact file bytes, NUL byte.",
+    "value": "5df401e20e269888f3d31f14334e6528ee41843a3ca18eac5345b0694a21633c"
+  }
+}

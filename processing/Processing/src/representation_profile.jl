@@ -26,13 +26,14 @@ end
     prepare_representation_profile(data)
 
 Validate the party-level figure input and add the exact plotted values:
-`vote_share_percent` and `representation_ratio`.
+`vote_share_percent`. Preserve the canonical `representation_ratio` input and
+validate it independently against vote and seat shares.
 """
 function prepare_representation_profile(data::AbstractDataFrame)
     input_row_count = nrow(data)
     input_row_count > 0 || throw(ArgumentError("Input contains no party rows."))
 
-    required_columns = (:election_year, :party, :vote_share, :seat_share)
+    required_columns = (:election_year, :party, :vote_share, :seat_share, :representation_ratio)
     available_columns = Set(propertynames(data))
     missing_columns = [column for column in required_columns if column ∉ available_columns]
     isempty(missing_columns) ||
@@ -103,9 +104,10 @@ function prepare_representation_profile(data::AbstractDataFrame)
     end
 
     plot_data[!, :vote_share_percent] = 100 .* plot_data.vote_share
-    plot_data[!, :representation_ratio] = plot_data.seat_share ./ plot_data.vote_share
-    all(isfinite, plot_data.representation_ratio) ||
-        throw(ArgumentError("Representation ratios contain non-finite values."))
+    plot_data[!, :representation_ratio] = _finite_float_column(plot_data, :representation_ratio)
+    all(isapprox(row.representation_ratio, row.seat_share / row.vote_share;
+        atol = 1e-12, rtol = 0.0) for row in eachrow(plot_data)) ||
+        throw(ArgumentError("Canonical representation ratios disagree with vote/seat shares."))
 
     zero_seat_parties = has_seats ? seat_values .== 0 : plot_data.seat_share .== 0
     if any(plot_data.representation_ratio[zero_seat_parties] .!= 0)

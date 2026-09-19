@@ -1,0 +1,465 @@
+# Coalition accounting: canonical calculations and mathematical specification
+
+## Canonical responsibilities and results
+
+- `CoalitionDecomposition.load_district_votes/load_district_seats` read the frozen
+  electoral files using the existing vote columns, winner statuses and party
+  identities. Both numerical runners use these loaders; no allocation is simulated.
+- `Processing.proportional_quota` and `Processing.exact_accounting` define quota,
+  differential, relative representation, threshold and strict inversion. Floating
+  tables are views of these quantities; classifications use exact operands.
+- `Processing.ideological_party_order/ideological_k_gap_coalitions` keep the fixed
+  order, enumerate contiguous or at-most-one-interior-omission sets, and test
+  proper-subset minimality within each full domain. Both ideological universes
+  retain the complete national vote denominator.
+- `CoalitionDecomposition.build_year_accounting/coalition_accounting` calculate
+  party/district and coalition A/B accounting once through shared routines.
+  `AccountingIntegration`, `AccountingEvidence` and `PartySizeDiagnostics`
+  select cases, rank contributions and format retained results from those routines.
+- `processing/cabinet_contract.py` reads only `data/cabinet`'s four public files.
+  `cabinet_party_sets.py` preserves election-specific set identities, actual
+  recurrences, coverage and separate scenarios. `cabinet_v5.Quantities` reads the
+  canonical coalition result; it contains no second electoral calculation.
+
+Scientific tables under `build/results/accounting/raw/` are canonical. In particular,
+`coalition_accounting.csv.gz` has one exact national account per election/member
+set across all ideological and cabinet scenarios. Domain membership and minimality
+remain separately keyed by election, universe, k and coalition in
+`build/results/domains/raw/ideology_k_gap_coalitions_both_universes.csv`. Full ideological
+accounting/member exports join those objects to the exact party panel; retained
+case/member/district vectors and rankings remain separately available. Identical
+paper/raw copies are no longer produced. Figure/table formats remain unchanged.
+
+`build/results/manuscript_results.csv`, produced by `manuscript_results.py`, contains
+current manuscript selectors and values plus compact descriptive claim summaries.
+Values come from scientific tables, never from the manuscript's expected literals.
+The manuscript audit reads this compact artifact; `validate_prose_provenance.py
+--direct-sources` independently checks the original selector sources.
+
+`make paper` runs public-calendar preparation, the ideological/party runner,
+shared decomposition export, cabinet scenario analysis, set aggregation, and
+presentation. `make test` runs independent scientific validation separately.
+`make package` copies the built manuscript/assets; `make replication` exports the
+frozen inputs and code. No package installation, cabinet reconstruction or
+migration baseline is part of these commands. Accounting evidence is generated
+by the shared decomposition runner; it does not require an intermediate PDF.
+
+Independent rational panel/coalition and full-domain minimality checks remain in
+`cross_domain_components.py`; `party_AB_diagnostic.py` retains the distinct
+selected-case sign/offset/deletion evidence. Small Julia property tests cover
+threshold ties, zero votes/seats, order independence, exact closure and an
+independent admissible-domain oracle. Historical sweep/repair/correction-comparison
+routes are retired.
+
+## Scope and interpretation
+
+This document is the mathematical contract for the coalition scientific core. All vote inputs must use the established federal-deputy valid-vote
+definition selected by
+`AnalysisRunnerCore.vote_kwargs_for_year(year)`. The extension must not invent
+or substitute vote-column logic.
+
+The decomposition is an accounting identity, not a causal decomposition.
+Throughout this extension:
+
+- \(A_i\) and \(A_C\) are the **within-district seat-allocation deviation**;
+- \(B_i\) and \(B_C\) are the **between-district seat-vote weighting
+  deviation**.
+
+The second component must not be called "malapportionment." It combines the
+interaction among district seat apportionment, turnout and valid-vote
+differences, and the geographic distribution of party or coalition support.
+District magnitude also shapes the within-district allocation environment and
+therefore can appear through \(A\). Neither component alone identifies a
+causal electoral-system effect.
+
+Party-level values require an additional caveat. In 2014 and 2018,
+proportional electoral coalitions pooled votes through joint electoral lists;
+in 2022, parties belonging to federations participated in a collective
+electoral unit. Party-level \(A_i\) and \(B_i\) are consequently ex post
+accounting contributions to observed party seats, not causal "party formula
+effects" and not necessarily deviations generated by an autonomous
+seat-allocation unit.
+
+## Notation and domain
+
+For one election, let \(d\) index districts and \(i\) index the complete set of
+canonical election-year parties. Define
+
+\[
+v_{id}=\text{valid federal-deputy votes for party }i\text{ in district }d,
+\qquad
+s_{id}=\text{federal-deputy seats attributed ex post to }i\text{ in }d.
+\]
+
+The input counts \(v_{id}\) and \(s_{id}\) are nonnegative integers. A complete
+party-by-district panel is required: an absent party is represented by explicit
+zeros, not by a missing row. Define district and national totals by
+
+\[
+V_d=\sum_i v_{id},\qquad S_d=\sum_i s_{id},
+\]
+
+\[
+v_i=\sum_d v_{id},\qquad s_i=\sum_d s_{id},
+\]
+
+\[
+V=\sum_d V_d=\sum_i v_i,
+\qquad
+S=\sum_d S_d=\sum_i s_i.
+\]
+
+The decomposition requires \(V_d>0\) for every included district and therefore
+\(V>0\). Representation ratios additionally require positive quota. Thus
+\(R_i\) is defined only when \(v_i>0\), and \(R_C\) only when \(v_C>0\). The
+seat/vote decomposition itself remains defined for a zero-vote party or
+coalition: then \(q=0\), \(d=s\), \(A+B=d\), but \(R=s/q\) and
+\(1+d/q\) are undefined. A positive seat count with zero valid votes is a data
+condition that must fail the empirical audit rather than be hidden by a
+pseudovalue. The empirical Chamber data should also have \(S>0\); otherwise
+seat shares and all representation ratios are undefined. No assumption that
+every \(S_d\) is positive is needed for the algebra, although a zero-seat
+district would be anomalous for the application and should be reported.
+
+## Party-level quantities and district contributions
+
+The party's exact national proportional quota, seat differential, and
+representation ratio are
+
+\[
+q_i=S\frac{v_i}{V},
+\qquad
+d_i=s_i-q_i,
+\]
+
+\[
+R_i=\frac{s_i/S}{v_i/V}=\frac{s_i}{q_i},
+\qquad (v_i>0).
+\]
+
+For each party-district cell, define
+
+\[
+a_{id}=s_{id}-S_d\frac{v_{id}}{V_d},
+\]
+
+\[
+b_{id}=S_d\frac{v_{id}}{V_d}-S\frac{v_{id}}{V}.
+\]
+
+The first term compares observed seats with exact proportional allocation
+inside the district. The second compares that district benchmark with the
+party's contribution to a single national proportional benchmark. Aggregate
+them as
+
+\[
+A_i=\sum_d a_{id},
+\qquad
+B_i=\sum_d b_{id}.
+\]
+
+These definitions yield the decomposition directly:
+
+\[
+\begin{aligned}
+A_i+B_i
+&=\sum_d\left[s_{id}-S_d\frac{v_{id}}{V_d}
+ +S_d\frac{v_{id}}{V_d}-S\frac{v_{id}}{V}\right]\\
+&=\sum_d s_{id}-\frac{S}{V}\sum_d v_{id}\\
+&=s_i-S\frac{v_i}{V}\\
+&=d_i.
+\end{aligned}
+\]
+
+The district contribution \(b_{id}\) has the equivalent form
+
+\[
+b_{id}
+=S\left(\frac{S_d}{S}-\frac{V_d}{V}\right)
+ \frac{v_{id}}{V_d}.
+\]
+
+To verify it, expand the right-hand side:
+
+\[
+\begin{aligned}
+S\left(\frac{S_d}{S}-\frac{V_d}{V}\right)
+ \frac{v_{id}}{V_d}
+&=S_d\frac{v_{id}}{V_d}
+ -S\frac{V_d}{V}\frac{v_{id}}{V_d}\\
+&=S_d\frac{v_{id}}{V_d}-S\frac{v_{id}}{V}\\
+&=b_{id}.
+\end{aligned}
+\]
+
+The production calculation must use the defining expression for \(b_{id}\).
+The factored expression is an independent algebraic cross-check computed by a
+separate audit path.
+
+Two implications clarify the meaning of \(B\). If
+\(S_d/S=V_d/V\) for every district, every \(b_{id}\), and hence every
+\(B_i\), equals zero. Unequal district magnitudes by themselves do not imply
+nonzero \(B_i\): what matters in this identity is unequal district seat and
+vote weights combined with the geographic distribution of party support.
+
+## District and party-system closure
+
+Within a district, party contributions to \(A\) sum to zero:
+
+\[
+\sum_i a_{id}
+=\sum_i s_{id}-\frac{S_d}{V_d}\sum_i v_{id}
+=S_d-S_d=0.
+\]
+
+The corresponding district total of \(b\) is generally not zero:
+
+\[
+\sum_i b_{id}
+=S_d-S\frac{V_d}{V}.
+\]
+
+It records the district's difference between its national seat weight and
+national valid-vote weight. These district totals cancel across the country.
+Consequently, for the complete party system,
+
+\[
+\sum_i A_i
+=\sum_d\sum_i a_{id}=0,
+\]
+
+\[
+\sum_i B_i
+=\sum_d\left(S_d-S\frac{V_d}{V}\right)
+=S-S\frac{V}{V}=0,
+\]
+
+and
+
+\[
+\sum_i d_i
+=\sum_i s_i-\frac{S}{V}\sum_i v_i
+=S-S=0.
+\]
+
+These are exact accounting identities. They depend on including the complete
+party system; a selected subset of parties need not sum to zero.
+
+## Coalition quantities and additivity
+
+For a coalition \(C\) whose membership is a subset of the canonical party
+universe, define
+
+\[
+v_{Cd}=\sum_{i\in C}v_{id},
+\qquad
+s_{Cd}=\sum_{i\in C}s_{id},
+\]
+
+\[
+v_C=\sum_d v_{Cd}=\sum_{i\in C}v_i,
+\qquad
+s_C=\sum_d s_{Cd}=\sum_{i\in C}s_i.
+\]
+
+The coalition quota, differential, and representation ratio are
+
+\[
+q_C=S\frac{v_C}{V},
+\qquad
+d_C=s_C-q_C,
+\]
+
+\[
+R_C=\frac{s_C/S}{v_C/V}
+=\frac{s_C}{q_C}
+=1+\frac{d_C}{q_C},
+\qquad (v_C>0).
+\]
+
+The last equality follows from \(s_C=q_C+d_C\). Define direct district-level
+coalition contributions by
+
+\[
+a_{Cd}=s_{Cd}-S_d\frac{v_{Cd}}{V_d},
+\]
+
+\[
+b_{Cd}=S_d\frac{v_{Cd}}{V_d}-S\frac{v_{Cd}}{V},
+\]
+
+with the independently equivalent factored form
+
+\[
+b_{Cd}=S\left(\frac{S_d}{S}-\frac{V_d}{V}\right)
+\frac{v_{Cd}}{V_d},
+\]
+
+and national components by
+
+\[
+A_C=\sum_d a_{Cd},
+\qquad
+B_C=\sum_d b_{Cd}.
+\]
+
+Linearity gives district-level party additivity:
+
+\[
+\begin{aligned}
+a_{Cd}
+&=\sum_{i\in C}s_{id}
+ -\frac{S_d}{V_d}\sum_{i\in C}v_{id}
+=\sum_{i\in C}a_{id},\\
+b_{Cd}
+&=\frac{S_d}{V_d}\sum_{i\in C}v_{id}
+ -\frac{S}{V}\sum_{i\in C}v_{id}
+=\sum_{i\in C}b_{id}.
+\end{aligned}
+\]
+
+Summing those equalities over districts proves national component additivity:
+
+\[
+A_C=\sum_{i\in C}A_i,
+\qquad
+B_C=\sum_{i\in C}B_i.
+\]
+
+The coalition differential is also additive:
+
+\[
+\begin{aligned}
+d_C
+&=\sum_{i\in C}s_i
+ -\frac{S}{V}\sum_{i\in C}v_i\\
+&=\sum_{i\in C}\left(s_i-S\frac{v_i}{V}\right)
+=\sum_{i\in C}d_i.
+\end{aligned}
+\]
+
+It follows either by direct cancellation of the coalition district terms or by
+party additivity that
+
+\[
+d_C=A_C+B_C.
+\]
+
+Thus the direct coalition calculation and the sum-of-member-parties
+calculation are mathematically distinct audit routes to the same result.
+
+## Coalition complements
+
+Let \(\bar C\) be the exact complement of \(C\) in the complete election-year
+party universe. Then
+
+\[
+v_{\bar C}=V-v_C,
+\qquad
+s_{\bar C}=S-s_C,
+\qquad
+q_{\bar C}=S-q_C.
+\]
+
+Therefore
+
+\[
+d_{\bar C}
+=(S-s_C)-(S-q_C)
+=-d_C.
+\]
+
+At the district level, the within-district contribution is also pointwise
+opposite:
+
+\[
+\begin{aligned}
+a_{\bar C d}
+&=(S_d-s_{Cd})-S_d\frac{V_d-v_{Cd}}{V_d}\\
+&=-s_{Cd}+S_d\frac{v_{Cd}}{V_d}\\
+&=-a_{Cd}.
+\end{aligned}
+\]
+
+Hence \(A_{\bar C}=-A_C\). For \(b\), the correct district relationship is
+
+\[
+b_{\bar C d}
+=\left(S_d-S\frac{V_d}{V}\right)-b_{Cd},
+\]
+
+not generally \(b_{\bar C d}=-b_{Cd}\). Summing over districts eliminates the
+first term because
+\(\sum_d(S_d-SV_d/V)=0\), so
+
+\[
+B_{\bar C}=-B_C.
+\]
+
+The required national complement checks are consequently
+
+\[
+A_C=-A_{\bar C},
+\qquad
+B_C=-B_{\bar C},
+\qquad
+d_C=-d_{\bar C}.
+\]
+
+They are valid only if \(C\) and \(\bar C\) form a disjoint, exhaustive
+partition of the same canonical party universe used to construct \(V\) and
+\(S\). Missing parties, duplicate membership, or membership translated to a
+different election-year party universe invalidates the premise and must fail
+the registry audit.
+
+## Exact-rational audit requirements
+
+All vote and seat counts enter the audit as integers. Where feasible, the
+independent validation path must promote them to arbitrary-precision integers
+and form `Rational{BigInt}` values before division. In particular, compute
+
+\[
+S_d v_{id}/V_d,\quad S v_{id}/V,\quad
+q_i=S v_i/V,\quad q_C=S v_C/V
+\]
+
+as exact rationals. Then verify by exact equality, equivalently a zero residual
+numerator, all of the following:
+
+1. the defining and factored forms of every \(b_{id}\);
+2. \(A_i=\sum_d a_{id}\) and \(B_i=\sum_d b_{id}\);
+3. \(d_i=A_i+B_i\) for every party;
+4. district-level and national coalition additivity;
+5. \(d_C=A_C+B_C\) and all member-party sum identities;
+6. all available complement identities; and
+7. the three complete-system zero-sum identities.
+
+For positive-vote parties and coalitions, \(R=s/q\) and
+\(R=1+d/q\) should likewise be checked as exact rational identities. Decimal
+columns are presentation products derived only after the exact audit. A
+tolerance is appropriate only when comparing those derived decimals with
+floating-point artifacts from the established pipeline; it is not appropriate
+for internal accounting identities built from integer inputs.
+
+The independent audit implementation must use direct loops and these
+definitions rather than call the production decomposition helpers. Synthetic
+data tests must separately demonstrate that:
+
+1. exact proportionality within every district makes every \(A_i=0\);
+2. equality of each district's seat and valid-vote weights makes every
+   \(B_i=0\);
+3. unequal district magnitudes alone do not logically imply nonzero \(B_i\);
+4. unequal seat/vote weights combined with geographically uneven support can
+   produce nonzero \(B_i\);
+5. party components sum exactly to zero over a complete system; and
+6. coalition components equal the sums of member-party components.
+
+Any zero required denominator (\(V_d\), \(V\), \(S\), or the quota of an
+object for which \(R\) is reported), noninteger source count, incomplete
+party-district panel, failure of district or national closure, mismatch with
+the established national outputs, or nonzero exact residual is a failed audit.
+A zero-vote object's accounting decomposition may instead be retained with
+\(R\) explicitly undefined, provided this agrees with the established
+convention and there is no unexplained positive seat count. Any failure must
+stop the decomposition rather than be rounded away or reclassified as a
+warning.

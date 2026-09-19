@@ -1,0 +1,13 @@
+election,ideological_universe,k,minimal_seat_majority_coalitions,minimal_inversions
+2014,seat_winning,0,8,4
+2014,all_parties,0,8,4
+2014,seat_winning,1,87,46
+2014,all_parties,1,88,43
+2018,seat_winning,0,8,1
+2018,all_parties,0,8,0
+2018,seat_winning,1,108,42
+2018,all_parties,1,118,24
+2022,seat_winning,0,4,2
+2022,all_parties,0,4,2
+2022,seat_winning,1,39,12
+2022,all_parties,1,53,17

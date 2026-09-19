@@ -1,2 +1,0 @@
-mandate_id,coalition_source,raw_party_count,canonical_party_count,unmapped_parties,ambiguous_mappings,vote_dataset_missing_parties,source_paths
-2023-2026,ideology,1,0,PARTIDO_INEXISTENTE_ABC,,,test://ideology
