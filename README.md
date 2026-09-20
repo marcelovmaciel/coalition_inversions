@@ -22,8 +22,11 @@ Party identity and lineage inputs are in
 Ideological ordering and classification inputs are stored under
 `scrape_classification/output/`. Versioned cabinet-party-set calendars used in
 the observed-coalition analysis are stored under `data/cabinet/` and treated as
-frozen analytical inputs. Cabinet-history reconstruction is outside the scope
-of this repository.
+frozen analytical inputs published by
+[`cabinet_compositions`](https://github.com/marcelovmaciel/cabinet_compositions).
+That upstream repository owns cabinet-history reconstruction and validation;
+this repository consumes its published release for the paper's analysis,
+replication, manuscript-support, and verification workflows.
 
 ## Running the analysis
 
