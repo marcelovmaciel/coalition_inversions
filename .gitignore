@@ -7,5 +7,19 @@ __pycache__/
 *.py[cod]
 .auctex-auto/
 
+# Local manuscript compilation products (keep the LaTeX sources tracked).
+/writing/**/*.aux
+/writing/**/*.bbl
+/writing/**/*.bcf
+/writing/**/*.blg
+/writing/**/*.fdb_latexmk
+/writing/**/*.fls
+/writing/**/*.log
+/writing/**/*.out
+/writing/**/*.run.xml
+/writing/**/*.synctex.gz
+/writing/**/*.toc
+/writing/submission_inversions_review/manuscript/main_rw_again.pdf
+
 # Frozen electoral/ideological inputs and the four-file cabinet snapshot
 # are deliberately not ignored.
